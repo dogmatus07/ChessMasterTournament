@@ -39,16 +39,3 @@ class Tournament:
             f"Current Round ID: {self.current_round_id}",
             f"Players: {self.players}",
         )
-
-
-tournament1 = Tournament(
-    name="Championship",
-    location="Suisse",
-    start_date="12/01/2024 18:00:00",
-    end_date="15/12/2024 15:00:00",
-    rounds=[],
-    players=["Jean Dubois", "Fabrice Loren"],
-    current_round_id=125,
-    description="Magnifique tournoi",
-    )
-print(tournament1)

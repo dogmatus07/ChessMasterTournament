@@ -2,23 +2,29 @@ class Tournament:
     """
     This class represent a tournament
     """
-    def __init__(
-            self,
-            name, location,
-            start_date, end_date,
-            current_round_id, rounds,
-            players, description,
-            round_number=4):
+    tournament_count = 0
+    all_tournaments = {}
+    def __init__(self, name, location, start_date, end_date, description):
 
+        Tournament.tournament_count += 1
+        self.tournament_id = Tournament.tournament_count
         self.name = name
         self.location = location
         self.start_date = start_date
         self.end_date = end_date
-        self.round_number = round_number
-        self.current_round_id = current_round_id
-        self.rounds = rounds
-        self.players = players
         self.description = description
+
+        Tournament.all_tournaments[self.tournament_count] = self
+
+    def __str__(self):
+        return (
+            f"ID Tournoi : {self.tournament_id} "
+            f"Nom : {self.name} "
+            f"Lieu : {self.location} "
+            f"Date de Début : {self.start_date} "
+            f"Date de fin : {self.end_date} "
+            f"Description : {self.description} "
+        )
 
     def add_player(self):
         pass
@@ -29,23 +35,13 @@ class Tournament:
     def start_round(self):
         pass
 
-    def __str__(self):
-        return (
-            f"Tournament: {self.name}",
-            f"Location: {self.location}",
-            f"Start Date: {self.start_date}",
-            f"End Date: {self.end_date}",
-            f"Round: {self.rounds}",
-            f"Current Round ID: {self.current_round_id}",
-            f"Players: {self.players}",
-        )
-
 
 class Player:
     """
     This class represent a Player
     """
     player_count = 0 #will be used for a unique player_id
+    all_players = {}
     def __init__(self, first_name, last_name, birthdate, chess_id, score=0):
         Player.player_count += 1  # everytime a player is created
         self.player_id = Player.player_count
@@ -54,6 +50,10 @@ class Player:
         self.birthdate = birthdate
         self.score = score
         self.chess_id = chess_id  # Two letters followed by five digits
+
+        Player.all_players[self.player_id] = self
+
+
 
     def update_score(self, points):
         """

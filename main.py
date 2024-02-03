@@ -27,7 +27,7 @@ while True:  # boucle pour le menu principal
 
             elif tournament_menu_choice == 3:
                 controller.view.clear_screen()
-                controller.view.display_main_menu() # back to the main menu
+                break
             else:
                 print("Choix non valide")
     if main_menu_choice == 2:
@@ -43,29 +43,38 @@ while True:  # boucle pour le menu principal
                 controller.view.clear_screen()
 
             elif player_menu_choice == 2:
+                controller.view.clear_screen()
                 pass
 
             elif player_menu_choice == 3:
+                controller.view.clear_screen()
                 pass
 
             elif player_menu_choice == 4:
+                controller.view.clear_screen()
                 break
     if main_menu_choice == 3:
         while True: # boucle pour le sous-menu rapports
+            controller.view.clear_screen()
             menu_report_choice = controller.view.display_menu_report()
             if menu_report_choice == 1:
+                controller.view.clear_screen()
                 pass
 
             elif menu_report_choice == 2:
+                controller.view.clear_screen()
                 pass
 
             elif menu_report_choice == 3:
+                controller.view.clear_screen()
                 pass
 
             elif menu_report_choice == 4:
+                controller.view.clear_screen()
                 pass
 
             elif menu_report_choice == 5:
+                controller.view.clear_screen()
                 break
     if main_menu_choice == 4:
         controller.view.clear_screen()

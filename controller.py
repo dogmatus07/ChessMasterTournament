@@ -14,8 +14,7 @@ class Controller:
                       chess_id,
                       score=0):
         player = Player(first_name, last_name, birthdate, chess_id, score=0)
-        print(f"Joueur créé : {player}")
-        print(Player.all_players)
+        self.view.display_player(player)
         return player
 
     def create_tournament(self, name, location, start_date, end_date, description):
@@ -26,5 +25,3 @@ class Controller:
     def resume_tournament(self):
         self.view.display_resume_tournament()
 
-    def clear_screen(self):
-        os.system('cls' if os.name == 'nt' else 'clear')

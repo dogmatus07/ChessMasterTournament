@@ -1,20 +1,46 @@
+import uuid
+from datetime import datetime
 class Tournament:
     """
     This class represent a tournament
     """
     tournament_count = 0
     all_tournaments = {}
-    def __init__(self, name, location, start_date, end_date, description):
+
+    def __init__(self, name, location, start_date, end_date, description, number_of_rounds = 4):
 
         Tournament.tournament_count += 1
-        self.tournament_id = Tournament.tournament_count
+        self.tournament_id = uuid.uuid4()
         self.name = name
         self.location = location
         self.start_date = start_date
         self.end_date = end_date
         self.description = description
+        self.number_of_rounds = number_of_rounds
+        self.current_round_number = 0
+        self.players = []  # players list
+        self.rounds = []  # rounds list
+        self.all_tournaments[self.tournament_count] = self
 
-        Tournament.all_tournaments[self.tournament_count] = self
+    def add_player(self, player):
+        self.players.append(player)
+
+    def start_new_round(self, round_name):
+        if len(self.rounds) < self.number_of_rounds:
+            new_round = Round(
+                name=round_name,
+                start_date=datetime.now(),
+                current_round_id=uuid.uuid4(),
+                end_date=None, matches=[],
+                is_complete=False)
+            self.rounds.append(new_round)
+            self.current_round_number += 1
+            print(f"Nouveau tour démarré : {round_name}")
+            print(new_round)
+        else:
+            print(f"Nombre maximum de tours atteint")
+
+
 
     def __str__(self):
         return (
@@ -25,15 +51,6 @@ class Tournament:
             f"Date de fin : {self.end_date} "
             f"Description : {self.description} "
         )
-
-    def add_player(self):
-        pass
-
-    def remove_player(self):
-        pass
-
-    def start_round(self):
-        pass
 
 
 class Player:
@@ -54,17 +71,6 @@ class Player:
         Player.all_players[self.player_id] = self
 
 
-
-    def update_score(self, points):
-        """
-        This will update the player's score :
-        win : 1 point
-        square : 0.5 point
-        defeat : 0 point
-        """
-        self.score += points
-        return self.score
-
     def __str__(self):
         return (
             f"Identifiant : {self.player_id}, "
@@ -74,51 +80,22 @@ class Player:
             f"Score : {self.score}"
         )
 
-    def to_json(self):
-        """
-        Add the player data to json
-        """
-        pass
-
-
 class Round:
     """
     This class represent a round
     """
-    def __init__(self, current_round_id, matches, is_complete, round_number=4):
-        self.round_number = round_number
-        self.matches = matches
-        self.is_complete = is_complete
+    def __init__(self, name, current_round_id, matches, start_date, end_date, is_complete, round_number=4):
+        self.name = name
         self.current_round_id = current_round_id
+        self.matches = matches if matches is not None else []
+        self.start_date = start_date
+        self.end_date = end_date
+        self.is_complete = is_complete
+        self.round_number = round_number
 
-    def add_match(self, match):
-        """
-        Add a match to the list of matches for the round
-        :param match:
-        :return:
-        """
-        pass
-
-    def finalize_round(self):
-        """
-        Change the value of is_complete to True when a round is complete
-        :return:
-        """
-        pass
-
-    def get_round_results(self):
-        """
-        Get the results of all matches of this round
-        :return:
-        """
-        pass
-
-    def to_json(self):
-        """
-        Add the round data to Json
-        :return:
-        """
-        pass
+    def close_round(self):
+        self.end_date = datetime.now()
+        self.is_complete = True
 
     def __str__(self):
         return f"Round Number: {self.round_number}, Matches: {self.matches}, Status: {self.is_complete}"

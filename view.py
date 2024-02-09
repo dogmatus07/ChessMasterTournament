@@ -17,12 +17,17 @@ class View:
     """
     Handling Menus Display
     """
-    def display_main_menu(self):
+    def display_main_menu(self, is_tournament_active):
         console.print("MENU PRINCIPAL", style="bold blue")
-        print("[1] Tournoi")
-        print("[2] Joueurs")
-        print("[3] Rapport")
-        print("[4] Quitter")
+        print("[1] Créer un tournoi")
+        if is_tournament_active:
+            print("[2] Démarrer un tournoi")
+            print("[3] Gérer les joueurs")
+        else:
+            print("[2] Démarrer un tournoi (créez d'abord un tournoi)")
+            print("[3] Gérer les joueurs (créez d'abord un tournoi)")
+        print("[4] Rapport et Statistiques")
+        print("[5] Quitter")
         main_menu_choice = int(input("Veuillez choisir un menu :"))
         return main_menu_choice
 
@@ -38,8 +43,9 @@ class View:
     def display_menu_tournament(self):
         console.print("MENU TOURNOI", style="bold blue")
         print("[1] Créer un tournoi")
-        print("[2] Reprendre un tournoi")
-        print("[3] Retour au menu principal")
+        print("[2] Lancer un tournoi")
+        print("[3] Reprendre un tournoi")
+        print("[4] Retour au menu principal")
         tournament_menu_choice = int(input("Quel est votre choix :"))
         return tournament_menu_choice
 
@@ -161,6 +167,13 @@ class View:
         print("[2] Non")
         ask_start_round_choice = input(":")
         return ask_start_round_choice
+
+    def ask_create_another_player(self):
+        print("Voulez-vous créer un autre joueur ?")
+        print("[1] Oui")
+        print("[2] Non")
+        another_player_choice = int(input(":"))
+        return another_player_choice
 
     """
     Error handling

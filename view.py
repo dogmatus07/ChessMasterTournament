@@ -31,7 +31,8 @@ class View:
         main_menu_choice = int(input("Veuillez choisir un menu :"))
         return main_menu_choice
 
-    def display_menu_players(self):
+    @staticmethod
+    def display_menu_players():
         print("Menu Joueurs")
         print("[1] Créer des joueurs")
         print("[2] Modifier un joueur")

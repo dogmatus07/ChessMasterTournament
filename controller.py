@@ -2,7 +2,6 @@ from view import View
 from models import Player
 from models import Tournament
 from models import Round
-from datetime import datetime
 from faker import Faker
 import time
 
@@ -72,7 +71,6 @@ class Controller:
                 self.view.clear_screen()
                 break
 
-
     def create_player(self,
                       first_name,
                       last_name,
@@ -87,7 +85,6 @@ class Controller:
 
     def edit_player(self):
         print(f"Modification joueur")
-
 
     def update_score(self, points):
         """
@@ -145,11 +142,6 @@ class Controller:
     def resume_tournament(self):
         self.view.display_resume_tournament()
 
-    def choose_tournament_players(self):
-        self.view.display_all_players()
-
-
     def show_all_tournaments(self):
         all_tournaments = Tournament.all_tournaments
         self.view.display_all_tournaments(all_tournaments)
-

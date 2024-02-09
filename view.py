@@ -53,11 +53,30 @@ class View:
         menu_report_choice = int(input("Quel est votre choix :"))
         return menu_report_choice
 
-    def display_all_players(self):
-        print("Affichage des joueurs créés")
-        for player_id, player in Player.all_players.items():
-            print(player)
-        print("Joueurs créés dans la liste")
+    def display_menu_participants(self):
+        pass
+
+    def display_all_players(self, players):
+        print("Joueurs disponibles pour participer au tournoi :")
+        if players:
+            for player in players:
+                print(f"Player ID: {player.player_id}"
+                      f"Nom : {player.first_name} {player.last_name}"
+                      f"Date de naissance : {player.birthdate}"
+                      f"Chess ID : {player.chess_id}"
+                      f"Score : {player.score}"
+                      )
+        else:
+            print("Aucun joueur disponible")
+
+    def display_all_tournaments(self, all_tournaments):
+        print("Liste des tournois :")
+        for tournament_id, tournament in all_tournaments.items():
+            print(f"Tournoi {tournament_id}: {tournament.name}"
+                  f"Lieu: {tournament.location}"
+                  f"Début: {tournament.start_date}"
+                  f"Fin: {tournament.end_date}"
+                  f"Description: {tournament.description}")
 
     def display_tournament(self, tournament):
         console.print("Tournoi créé avec succès", style="bold red")
@@ -97,17 +116,17 @@ class View:
     Get informations from user
     """
     def get_player_infos(self):
-        print(f"Nom du joueur:")
+        console.print(f"Nom du joueur:", style="bold blue")
         first_name = input(":")
-        print(f"Prénom du joueur:")
+        console.print(f"Prénom du joueur:", style="bold blue")
         last_name = input(":")
         birthdate = None
         while birthdate is None:
-            print("Saisissez la date de naissance au format JJ/MM/YYY :")
+            console.print("Saisissez la date de naissance au format JJ/MM/YYY :", style="bold blue")
             birthdate_input = input(":")
             birthdate = self.validate_date(birthdate_input)
 
-        print(f"Chess ID:")
+        console.print(f"Chess ID:", style="bold blue")
         chess_id = None
         while chess_id is None:
             chess_id_input = input(":")
@@ -117,15 +136,15 @@ class View:
 
     def get_tournament_infos(self):
         console.print("CRÉATION DU TOURNOI", style="bold blue")
-        print("Nom du tournoi")
+        console.print("Nom du tournoi", style="bold blue")
         name = input(":")
-        print("Lieu")
+        console.print("Lieu", style="bold blue")
         location = input(":")
-        print("Date de début")
+        console.print("Date de début", style="bold blue")
         start_date = input(":")
-        print("Date de fin")
+        console.print("Date de fin", style="bold blue")
         end_date = input(":")
-        print("Description")
+        console.print("Description", style="bold blue")
         description = input(":")
         return name, location, start_date, end_date, description
 
@@ -135,3 +154,21 @@ class View:
 
     def clear_screen(self):
         os.system('cls' if os.name == 'nt' else 'clear')
+
+    def ask_start_round(self):
+        print("Commencer le round ?")
+        print("[1] Oui")
+        print("[2] Non")
+        ask_start_round_choice = input(":")
+        return ask_start_round_choice
+
+    """
+    Error handling
+    """
+
+    def menu_error(self):
+        print("Choix non valide, veuillez réessayer")
+
+    def menu_start_round(self, round_name):
+        print(f"Démarrage du tour : {round_name} sur un total de 4 Rounds")
+        time.sleep(10)

@@ -17,81 +17,61 @@ class Controller:
     def main_loop(self):
         while True:
             self.view.clear_screen()
-            main_menu_choice = self.view.display_main_menu()
-            if main_menu_choice == 1:
-                while True:
-                    self.view.clear_screen()
-                    tournament_menu_choice = self.view.display_menu_tournament()
-                    if tournament_menu_choice == 1:
-                        self.view.clear_screen()
-                        tournament_infos = self.view.get_tournament_infos()
-                        self.create_tournament(*tournament_infos)
-                        time.sleep(2)
-                        self.view.clear_screen()
-                        # display all players for that tournament
-                        if self.current_tournament:
-                            self.view.display_all_players(self.current_tournament.players)
-
-                        # Ask confirmation to start the round
-                        ask_start_round_choice = self.view.ask_start_round()
-                        if ask_start_round_choice == 1:
-                            # Start the first round
-                            round_name = self.start_round()
-                            self.view.menu_start_round(round_name)
-                        elif ask_start_round_choice == 2:
-                            self.view.display_all_players(self.current_tournament.players)
-                        else:
-                            break
-
-                    elif tournament_menu_choice == 2:
-                        self.view.display_resume_tournament()
-                    elif tournament_menu_choice == 3:
-                        self.view.clear_screen()
-                        break
-                    else:
-                        self.view.menu_error()
-            elif main_menu_choice == 2:
+            is_tournament_active = self.current_tournament is not None
+            main_menu_choice = self.view.display_main_menu(is_tournament_active)
+            if main_menu_choice == 1:  # Create Tournament
+                self.view.clear_screen()
+                tournament_infos = self.view.get_tournament_infos()
+                self.create_tournament(*tournament_infos)
+                time.sleep(2)
+                self.view.clear_screen()
+            elif main_menu_choice == 2:  # Launch Tournament
+                self.launch_tournament()
+            elif main_menu_choice == 3:  # Manage Players
                 while True:
                     self.view.clear_screen()
                     player_menu_choice = self.view.display_menu_players()
-                    if player_menu_choice == 1:
-                        self.view.clear_screen()
-                        player_infos = self.view.get_player_infos()
-                        self.create_player(*player_infos)
-                        time.sleep(2)
-                        self.view.clear_screen()
-                    elif player_menu_choice == 2:
+                    if player_menu_choice == 1:  # Create player
+                        while True:
+                            self.view.clear_screen()
+                            player_infos = self.view.get_player_infos()
+                            self.create_player(*player_infos)
+                            time.sleep(2)
+                            another_player_choice = self.view.ask_create_another_player()
+                            if another_player_choice != 1:
+                                break
+
+                    elif player_menu_choice == 2:  # Edit player
                         self.view.clear_screen()
                         self.edit_player()
-                    elif player_menu_choice == 3:
+                    elif player_menu_choice == 3:  # Display all players
                         self.view.clear_screen()
                         self.view.display_all_players(self.current_tournament.players)
                         time.sleep(2)
-                    elif player_menu_choice == 4:
+                    elif player_menu_choice == 4:  # Return to main menu
                         self.view.clear_screen()
                         break
                     else:
                         self.view.menu_error()
-            elif main_menu_choice == 3:
+            elif main_menu_choice == 4:  # Reportings
                 while True:
                     self.view.clear_screen()
                     menu_report_choice = self.view.display_menu_report()
-                    if menu_report_choice == 1:
+                    if menu_report_choice == 1:  # Players Statistics
                         print("Statistiques des joueurs")
-                    elif menu_report_choice == 2:
+                    elif menu_report_choice == 2:  # Display all tournaments
                         self.show_all_tournaments()
                         time.sleep(2)
-                    elif menu_report_choice == 3:
+                    elif menu_report_choice == 3:  # Display all rounds
                         print("Liste des rounds")
-                    elif menu_report_choice == 4:
+                    elif menu_report_choice == 4:  # Display all matches
                         print("Liste des matchs")
                     elif menu_report_choice == 5:
                         break
-            elif main_menu_choice == 4:
+            elif main_menu_choice == 5:  # Quit the app
                 self.view.clear_screen()
                 break
-            else:
-                self.view.menu_error()
+
 
     def create_player(self,
                       first_name,
@@ -123,6 +103,21 @@ class Controller:
         self.view.display_tournament(self.current_tournament)
         return self.current_tournament
 
+    def launch_tournament(self):
+        while True:
+            if self.current_tournament:
+                self.view.display_all_players(self.current_tournament.players)
+                # Ask confirmation to start the round
+                ask_start_round_choice = self.view.ask_start_round()
+                if ask_start_round_choice == 1:
+                    # Start the first round
+                    round_name = self.start_round()
+                    self.view.menu_start_round(round_name)
+                elif ask_start_round_choice == 2:
+                    self.view.display_all_players(self.current_tournament.players)
+                else:
+                    break
+
     def start_round(self):
         round_name = None
         if self.current_tournament:
@@ -153,28 +148,8 @@ class Controller:
     def choose_tournament_players(self):
         self.view.display_all_players()
 
-    def finalize_round(self):
-        """
-        Change the value of is_complete to True when a round is complete
-        :return:
-        """
-        pass
-
-    def get_round_results(self):
-        """
-        Get the results of all matches of this round
-        :return:
-        """
-        pass
-
-    def add_match(self, match):
-        """
-        Add a match to the list of matches for the round
-        :param match:
-        :return:
-        """
-        pass
 
     def show_all_tournaments(self):
         all_tournaments = Tournament.all_tournaments
         self.view.display_all_tournaments(all_tournaments)
+

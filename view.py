@@ -190,6 +190,49 @@ class View:
             return False
 
     """
+    Managing Views
+    """
+
+    @staticmethod
+    def clear_screen():
+        os.system('cls' if os.name == 'nt' else 'clear')
+
+    @staticmethod
+    def ask_start_round():
+        print("Commencer le round ?")
+        print("[1] Oui")
+        print("[2] Non")
+        ask_start_round_choice = input(":")
+        return ask_start_round_choice
+
+    @staticmethod
+    def ask_create_another_player():
+        print("Voulez-vous créer un autre joueur ?")
+        print("[1] Oui")
+        print("[2] Non")
+        another_player_choice = int(input(":"))
+        return another_player_choice
+
+    @staticmethod
+    def ask_user_choice():
+        user_input = input("Quel est votre choix ? : ")
+        user_choice = Panel(user_input, title="Votre choix ", style="bold blue", width=panel_width)
+        console.print(user_choice, justify="center")
+        return int(user_input)
+    """
+    Error handling
+    """
+
+    @staticmethod
+    def menu_error():
+        print("Choix non valide, veuillez réessayer")
+
+    @staticmethod
+    def menu_start_round(round_name):
+        print(f"Démarrage du tour : {round_name} sur un total de 4 Rounds")
+        time.sleep(10)
+
+    """
     Get informations from user
     """
     def get_player_infos(self):
@@ -239,7 +282,7 @@ class View:
         description = input("Description : ")
 
         # display the datas entered
-
+        View.clear_screen()
         tournament_created_menu = Panel(
             "Informations du tournoi",
             title="TOURNOI CREÉ AVEC SUCCÊS",
@@ -259,46 +302,3 @@ class View:
 
         console.print(table, justify="center")
         return name, location, start_date, end_date, description
-
-    """
-    Managing Views
-    """
-
-    @staticmethod
-    def clear_screen():
-        os.system('cls' if os.name == 'nt' else 'clear')
-
-    @staticmethod
-    def ask_start_round():
-        print("Commencer le round ?")
-        print("[1] Oui")
-        print("[2] Non")
-        ask_start_round_choice = input(":")
-        return ask_start_round_choice
-
-    @staticmethod
-    def ask_create_another_player():
-        print("Voulez-vous créer un autre joueur ?")
-        print("[1] Oui")
-        print("[2] Non")
-        another_player_choice = int(input(":"))
-        return another_player_choice
-
-    @staticmethod
-    def ask_user_choice():
-        user_input = input("Quel est votre choix ? : ")
-        user_choice = Panel(user_input, title="Votre choix ", style="bold blue", width=panel_width)
-        console.print(user_choice, justify="center")
-        return int(user_input)
-    """
-    Error handling
-    """
-
-    @staticmethod
-    def menu_error():
-        print("Choix non valide, veuillez réessayer")
-
-    @staticmethod
-    def menu_start_round(round_name):
-        print(f"Démarrage du tour : {round_name} sur un total de 4 Rounds")
-        time.sleep(10)

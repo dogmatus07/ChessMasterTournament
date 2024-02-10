@@ -17,7 +17,8 @@ class Controller:
         while True:
             self.view.clear_screen()
             is_tournament_active = self.current_tournament is not None
-            main_menu_choice = self.view.display_main_menu(is_tournament_active)
+            self.view.app_main_menu(is_tournament_active)
+            main_menu_choice = self.view.ask_user_choice()
             if main_menu_choice == 1:  # Create Tournament
                 self.view.clear_screen()
                 tournament_infos = self.view.get_tournament_infos()
@@ -29,7 +30,8 @@ class Controller:
             elif main_menu_choice == 3:  # Manage Players
                 while True:
                     self.view.clear_screen()
-                    player_menu_choice = self.view.display_menu_players()
+                    self.view.app_menu_players()
+                    player_menu_choice = self.view.ask_user_choice()
                     if player_menu_choice == 1:  # Create player
                         while True:
                             self.view.clear_screen()
@@ -97,7 +99,7 @@ class Controller:
 
     def create_tournament(self, name, location, start_date, end_date, description):
         self.current_tournament = Tournament(name, location, start_date, end_date, description)
-        self.view.display_tournament(self.current_tournament)
+        # self.view.display_tournament(self.current_tournament)
         return self.current_tournament
 
     def launch_tournament(self):

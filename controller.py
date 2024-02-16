@@ -23,7 +23,9 @@ class Controller:
                 self.view.clear_screen()
                 tournament_infos = self.view.get_tournament_infos()
                 self.create_tournament(*tournament_infos)
-                time.sleep(2)
+                self.view.clear_screen()
+                self.view.display_tournament(self.current_tournament)
+                self.view.return_main_menu()
                 self.view.clear_screen()
             elif main_menu_choice == 2:  # Launch Tournament
                 self.launch_tournament()
@@ -36,8 +38,8 @@ class Controller:
                         while True:
                             self.view.clear_screen()
                             player_infos = self.view.get_player_infos()
+                            self.view.clear_screen()
                             self.create_player(*player_infos)
-                            time.sleep(2)
                             another_player_choice = self.view.ask_create_another_player()
                             if another_player_choice != 1:
                                 break
@@ -47,13 +49,15 @@ class Controller:
                         self.edit_player()
                     elif player_menu_choice == 3:  # Display all players
                         self.view.clear_screen()
-                        self.view.display_all_players(self.current_tournament.players)
+                        self.view.display_players(self.current_tournament.players)
                         time.sleep(2)
                     elif player_menu_choice == 4:  # Return to main menu
                         self.view.clear_screen()
                         break
                     else:
                         self.view.menu_error()
+                        time.sleep(3)
+                        self.view.ask_user_choice()
             elif main_menu_choice == 4:  # Reportings
                 while True:
                     self.view.clear_screen()
@@ -76,13 +80,18 @@ class Controller:
     def create_player(self,
                       first_name,
                       last_name,
+                      gender,
                       birthdate,
                       chess_id,
                       score=0):
-        player = Player(first_name, last_name, birthdate, chess_id, score=0)
-        self.view.display_player(player)
+
+        #  Create instance of player
+        player = Player(first_name, last_name, gender, birthdate, chess_id, score=0)
+
+        #  check if there's an active tournament and add the player to the list of players
         if self.current_tournament:
-            self.current_tournament.add_player(player)
+            self.current_tournament.players.append(player)
+            self.view.display_players(self.current_tournament.players)
         return player
 
     def edit_player(self):
@@ -99,31 +108,31 @@ class Controller:
 
     def create_tournament(self, name, location, start_date, end_date, description):
         self.current_tournament = Tournament(name, location, start_date, end_date, description)
-        # self.view.display_tournament(self.current_tournament)
         return self.current_tournament
 
     def launch_tournament(self):
         while True:
             if self.current_tournament:
-                self.view.display_all_players(self.current_tournament.players)
+                self.view.display_players(self.current_tournament.players)
                 # Ask confirmation to start the round
                 ask_start_round_choice = self.view.ask_start_round()
                 if ask_start_round_choice == 1:
                     # Start the first round
+                    time.sleep(10)
                     round_name = self.start_round()
                     self.view.menu_start_round(round_name)
-                elif ask_start_round_choice == 2:
-                    self.view.display_all_players(self.current_tournament.players)
+                    time.sleep(10)
                 else:
                     break
 
     def start_round(self):
-        round_name = None
+        round_name = ""
         if self.current_tournament:
             new_round_number = len(self.current_tournament.rounds) + 1
             round_name = f"Round {new_round_number}"
             if new_round_number <= self.current_tournament.number_of_rounds:
                 self.current_tournament.start_new_round(round_name)
+                print(f"Démarrage du {round_name}")
             else:
                 print("Nombre maximum de tours atteint")
         else:

@@ -27,16 +27,16 @@ class Tournament:
 
     def start_new_round(self, round_name):
         if len(self.rounds) < self.number_of_rounds:
+            current_round_id = len(self.rounds) + 1
             new_round = Round(
                 name=round_name,
+                current_round_id=current_round_id,
+                matches=[],
                 start_date=datetime.now(),
-                current_round_id=uuid.uuid4(),
-                end_date=None, matches=[],
+                end_date=None,
                 is_complete=False)
             self.rounds.append(new_round)
-            self.current_round_number += 1
             print(f"Nouveau tour démarré : {round_name}")
-            print(new_round)
         else:
             print(f"Nombre maximum de tours atteint")
 
@@ -57,13 +57,22 @@ class Player:
     """
     This class represent a Player
     """
-    player_count = 0 #will be used for a unique player_id
+    player_count = 0  # will be used for a unique player_id
     all_players = {}
-    def __init__(self, first_name, last_name, birthdate, chess_id, score=0):
+
+    def __init__(
+            self,
+            first_name,
+            last_name,
+            gender,
+            birthdate,
+            chess_id,
+            score=0):
         Player.player_count += 1  # everytime a player is created
         self.player_id = Player.player_count
         self.first_name = first_name
         self.last_name = last_name
+        self.gender = gender
         self.birthdate = birthdate
         self.score = score
         self.chess_id = chess_id  # Two letters followed by five digits

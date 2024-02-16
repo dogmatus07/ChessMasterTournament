@@ -99,12 +99,16 @@ class View:
 
     @staticmethod
     def display_all_players(players):
-        table = Table(title="Joueurs disponibles pour participer au tournoi", style="bold blue")
-        # print("Joueurs disponibles pour participer au tournoi :")
-
+        header_menu = Panel("Liste des joueurs disponibles pour participer au tournoi", title="MENU DÉMARRER TOURNOI")
+        table = Table(title="", style="bold blue")
+        help_menu = Panel("Vous êtes prêt(e) à démarrer le tournoi",
+                          title="AIDE",
+                          border_style="green",
+                          width=panel_width,
+                          style="bold green")
         # add columns
         table.add_column("Player ID", style="cyan")
-        table.add_column("Nom", style="blue")
+        table.add_column("Nom & prénoms", style="blue")
         table.add_column("Date de naissance", style="yellow")
         table.add_column("Chess ID", style="magenta")
         table.add_column("Score", style="green")
@@ -112,7 +116,7 @@ class View:
             for player in players:
                 table.add_row(
                     str(player.player_id),
-                    str(player.first_name) + str(player.last_name),
+                    str(player.first_name) + " " + str(player.last_name),
                     str(player.birthdate),
                     str(player.chess_id),
                     str(player.score))
@@ -120,9 +124,25 @@ class View:
         else:
             print("Aucun joueur disponible")
 
+        #  Display the results
+        console.print(header_menu, justify="center")
+        console.print(table, justify="center")
+        console.print(help_menu, justify="center")
+
     @staticmethod
-    def display_all_tournaments(all_tournaments):
-        table = Table(title="Liste des joueurs disponibles pour le tournoi")
+    def display_tournament(tournament):
+        tournament_created_menu = Panel(
+            "Informations du tournoi",
+            title="TOURNOI CREÉ AVEC SUCCÊS",
+            width=panel_width,
+            style="bold green")
+
+        help_menu_created = Panel("Vous pouvez maintenant créer des joueurs pour participer à ce tournoi",
+                                  title="AIDE",
+                                  border_style="green",
+                                  width=panel_width,
+                                  style="bold green")
+        table = Table()
 
         # adding the columns
         table.add_column("ID Tournoi", style="cyan", no_wrap=True)
@@ -132,32 +152,48 @@ class View:
         table.add_column("Fin", style="yellow")
         table.add_column("Description", style="blue")
 
-        for tournament_id, tournament in all_tournaments.items():
-            table.add_row(
-                tournament_id,
-                tournament.name,
-                tournament.location,
-                tournament.start_date,
-                tournament.end_date,
-                tournament.description)
-        console.print(table)
-
-        """
-        print(f"Tournoi {tournament_id}: {tournament.name}"
-              f"Lieu: {tournament.location}"
-              f"Début: {tournament.start_date}"
-              f"Fin: {tournament.end_date}"
-              f"Description: {tournament.description}")
-        """
+        # adding the rows
+        table.add_row(
+            str(tournament.tournament_id),
+            tournament.name,
+            tournament.location,
+            tournament.start_date,
+            tournament.end_date,
+            tournament.description)
+        console.print(tournament_created_menu, justify="center")
+        console.print(table, justify="center")
+        console.print(help_menu_created, justify="center")
     @staticmethod
-    def display_tournament(tournament):
-        console.print("Tournoi créé avec succès", style="bold red")
-        print(tournament)
-
-    @staticmethod
-    def display_player(player):
-        console.print("Joueur créé avec succès", style="bold red")
-        print(player)
+    def display_players(players):
+        header_menu = Panel("Résultats", title="MENU CRÉATION DE JOUEURS", width=panel_width, style="bold blue")
+        #  Adding the column
+        table = Table(title=None)
+        table.add_column("Player ID", style="cyan")
+        table.add_column("Nom", style="blue")
+        table.add_column("Genre", style="green")
+        table.add_column("Date de naissance", style="yellow")
+        table.add_column("Chess ID", style="magenta")
+        table.add_column("Score", style="green")
+        if players:
+            for player in players:
+                table.add_row(
+                    str(player.player_id),
+                    f"{player.first_name} {player.last_name}",
+                    str(player.gender),
+                    str(player.birthdate),
+                    player.chess_id,
+                    str(player.score)
+                )
+        else:
+            print("Aucun joueur disponible")
+        help_menu = Panel("Les joueurs ont été créés avec succès",
+                          title="AIDE",
+                          border_style="green",
+                          width=panel_width,
+                          style="bold green")
+        console.print(header_menu, justify="center")
+        console.print(table, justify="center")
+        console.print(help_menu, justify="center")
 
     @staticmethod
     def display_resume_tournament():
@@ -187,7 +223,7 @@ class View:
             return chess_id
         else:
             print("Format de Chess ID invalide. Il doit être composé de 2 lettres suivies de 5 chiffres. Ex. : AB12345")
-            return False
+            return ""
 
     """
     Managing Views
@@ -202,7 +238,7 @@ class View:
         print("Commencer le round ?")
         print("[1] Oui")
         print("[2] Non")
-        ask_start_round_choice = input(":")
+        ask_start_round_choice = int(input(":"))
         return ask_start_round_choice
 
     @staticmethod
@@ -230,16 +266,50 @@ class View:
     @staticmethod
     def menu_start_round(round_name):
         print(f"Démarrage du tour : {round_name} sur un total de 4 Rounds")
-        time.sleep(10)
+        time.sleep(2)
 
     """
     Get informations from user
     """
     def get_player_infos(self):
-        console.print(f"Nom du joueur:", style="bold blue")
-        first_name = input(":")
-        console.print(f"Prénom du joueur:", style="bold blue")
-        last_name = input(":")
+        header_menu = Panel(
+            "Veuillez fournir les informations du joueur",
+            title="MENU CRÉATION JOUEURS",
+            width= panel_width,
+            style="bold blue")
+
+        help_menu = Panel("Ces joueurs vont participer au tournoi",
+                          title="AIDE",
+                          border_style="green",
+                          width=panel_width,
+                          style="bold green")
+
+        table = Table()
+        table.add_column("Nom & prénoms du joueur", style="bold magenta")
+        table.add_column("Genre")
+        table.add_column("Date de naissance")
+        table.add_column("Chess ID")
+
+        table.add_row("Nom & prénoms", "H/F", "Format JJ/MM/AAAA", "Format AB12345")
+
+        console.print(header_menu, justify="center")
+        console.print(table, justify="center")
+        console.print(help_menu, justify="center")
+
+        #  ask user for informations
+        console.print(f"Nom du joueur :", style="bold blue")
+        first_name = input(">> ")
+        console.print(f"Prénom du joueur :", style="bold blue")
+        last_name = input(">> ")
+        console.print("Genre : ", style="bold blue")
+        gender = ""
+        while True:
+            ask_genre = input("Choisir entre H ou F >> ")
+            if ask_genre == "H" or ask_genre == "F":
+                gender = ask_genre
+                break
+            else:
+                print("Réponse invalide, veuillez saisir H pour Homme ou F pour Femme")
         birthdate = None
         while birthdate is None:
             console.print("Saisissez la date de naissance au format JJ/MM/YYY :", style="bold blue")
@@ -251,17 +321,20 @@ class View:
         while chess_id is None:
             chess_id_input = input(":")
             chess_id = self.validate_chess_id(chess_id_input)
+        return first_name, last_name, gender, birthdate.strftime("%d/%m/%Y"), chess_id
 
-        return first_name, last_name, birthdate.strftime("%d/%m/%Y"), chess_id
-
-    @staticmethod
-    def get_tournament_infos():
-        tournament_menu_infos = Panel(
+    def get_tournament_infos(self):
+        header_menu = Panel(
             "Veuillez entrer les informations du tournoi",
             title="CRÉATION DU TOURNOI",
             width=panel_width,
             style="bold blue")
-        console.print(tournament_menu_infos, justify="center")
+
+        help_menu = Panel("Veuillez fournir les informations demandées",
+                          title="AIDE",
+                          border_style="green",
+                          width=panel_width,
+                          style="bold green")
 
         table = Table()
         table.add_column("Champ", style="bold magenta")
@@ -273,32 +346,27 @@ class View:
         table.add_row("Date de fin", "Format: DD/MM/YYYY")
         table.add_row("Description", "Brève description du tournoi")
 
+        console.print(header_menu, justify="center")
         console.print(table, justify="center")
+        console.print(help_menu, justify="center")
 
+        # ask the informations
         name = input("Nom du tournoi : ")
         location = input("Lieu : ")
-        start_date = input("Date de début (DD/MM/YYYY) : ")
-        end_date = input("Date de fin (DD/MM/YYYY) : ")
+        start_date = None
+        while start_date is None:
+            console.print("Saisissez la date au format JJ/MM/YYY :", style="bold blue")
+            start_date_input = input(":")
+            start_date = self.validate_date(start_date_input)
+        end_date = None
+        while end_date is None:
+            console.print("Saisissez la date au format JJ/MM/YYY :", style="bold blue")
+            end_date_input = input(":")
+            end_date = self.validate_date(end_date_input)
         description = input("Description : ")
+        return name, location, start_date.strftime("%d/%m/%Y"), end_date.strftime("%d/%m/%Y"), description
 
-        # display the datas entered
-        View.clear_screen()
-        tournament_created_menu = Panel(
-            "Informations du tournoi",
-            title="TOURNOI CREÉ AVEC SUCCÊS",
-            width=panel_width,
-            style="bold green")
-
-        console.print(tournament_created_menu, justify="center")
-
-        table = Table()
-        table.add_column("Champ", style="bold magenta")
-        table.add_column("Description", justify="left")
-        table.add_row("Nom", name)
-        table.add_row("Lieu", location)
-        table.add_row("Date de début", start_date)
-        table.add_row("Date de fin", end_date)
-        table.add_row("Description", description)
-
-        console.print(table, justify="center")
-        return name, location, start_date, end_date, description
+    @staticmethod
+    def return_main_menu():
+        print("[1] Retourner au menu principal")
+        input(":")

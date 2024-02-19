@@ -7,7 +7,7 @@ class Tournament:
     tournament_count = 0
     all_tournaments = {}
 
-    def __init__(self, name, location, start_date, end_date, description, number_of_rounds = 4):
+    def __init__(self, name, location, start_date, end_date, description, number_of_rounds=4):
 
         Tournament.tournament_count += 1
         self.tournament_id = uuid.uuid4()
@@ -17,7 +17,7 @@ class Tournament:
         self.end_date = end_date
         self.description = description
         self.number_of_rounds = number_of_rounds
-        self.current_round_number = 0
+        self.current_round_number = 1
         self.players = []  # players list
         self.rounds = []  # rounds list
         self.all_tournaments[self.tournament_count] = self
@@ -39,8 +39,6 @@ class Tournament:
             print(f"Nouveau tour démarré : {round_name}")
         else:
             print(f"Nombre maximum de tours atteint")
-
-
 
     def __str__(self):
         return (
@@ -76,8 +74,18 @@ class Player:
         self.birthdate = birthdate
         self.score = score
         self.chess_id = chess_id  # Two letters followed by five digits
+        self.match_won = []
+        self.match_lost = []
 
         Player.all_players[self.player_id] = self
+
+    @property
+    def name(self):
+        return f"{self.first_name} {self.last_name}"
+
+    def update_score(self, points: float):
+        self.score += points
+        return self.score
 
 
     def __str__(self):
@@ -115,31 +123,28 @@ class Match:
     This class represent a Match
     """
 
-    def __init__(self, match_id, player1, player2, match_result):
+    def __init__(self, match_id, player1, player2):
         self.match_id = match_id
         self.player1 = player1
         self.player2 = player2
-        self.match_result = match_result
+        self.winner = None
+        self.loser = None
+        self.result = None
 
-    def set_result(self):
-        """
-        Method for setting the result of a match
-        :return:
-        """
-        pass
+    def set_result(self, winner=None):
+        if winner is None:
+            self.result = 'draw'
+            self.player1.score += 0.5
+            self.player2.score += 0.5
+        elif winner == self.player1:
+            self.result = 'player1'
+            self.player1.score += 1
+        else:
+            self.result = 'player2'
+            self.player2.score += 1
 
-    def get_winner(self):
-        """
-        Method to get who is the winner of the match
-        :return:
-        """
-        pass
 
-    def to_json(self):
-        """
-        Add the match data to Json
-        :return:
-        """
+
 
     def __str__(self):
         return (

@@ -10,6 +10,7 @@ import re
 console = Console()
 panel_width = 60
 
+
 class View:
     def __init__(self) -> None:
         pass
@@ -20,7 +21,7 @@ class View:
 
     @staticmethod
     def app_main_menu(is_tournament_active):
-        main_menu = Panel("MENU PRINCIPAL", title="CHESS MASTER APP", subtitle="Bienvenue", width=panel_width,
+        main_menu = Panel("MENU PRINCIPAL", title="CHESS TOURNAMENT MANAGER", subtitle="Bienvenue", width=panel_width,
                           style="bold blue")
         # test if there's a tournament object active
         if is_tournament_active:
@@ -163,6 +164,7 @@ class View:
         console.print(tournament_created_menu, justify="center")
         console.print(table, justify="center")
         console.print(help_menu_created, justify="center")
+
     @staticmethod
     def display_players(players):
         header_menu = Panel("Résultats", title="MENU CRÉATION DE JOUEURS", width=panel_width, style="bold blue")
@@ -275,7 +277,7 @@ class View:
         header_menu = Panel(
             "Veuillez fournir les informations du joueur",
             title="MENU CRÉATION JOUEURS",
-            width= panel_width,
+            width=panel_width,
             style="bold blue")
 
         help_menu = Panel("Ces joueurs vont participer au tournoi",
@@ -350,7 +352,7 @@ class View:
         console.print(table, justify="center")
         console.print(help_menu, justify="center")
 
-        # ask the informations
+        # ask infos
         name = input("Nom du tournoi : ")
         location = input("Lieu : ")
         start_date = None
@@ -370,3 +372,143 @@ class View:
     def return_main_menu():
         print("[1] Retourner au menu principal")
         input(":")
+
+    def display_matches(self, matches):
+        # Afficher les matchs ici
+        for match in matches:
+            print(f"{match.player1} vs {match.player2}")
+
+    def ask_match_result(self, match):
+        header_menu = Panel(
+            "Qui a gagné ?",
+            title="RÉSULTAT DU MATCH",
+            width=panel_width,
+            style="bold blue")
+
+        main_menu = Panel(f"\n1. Victoire de Player 1 : {match.player1.name}"
+                          f"\n2. Victoire de Player 2 : {match.player2.name}"
+                          "\n3. Match nul",
+                          title="OPTIONS")
+
+        help_menu = Panel(f"Veuillez entrer les résultats du match entre {match.player1.name} et {match.player2.name}",
+                          title="AIDE",
+                          border_style="green",
+                          width=panel_width,
+                          style="bold green")
+
+        console.print(header_menu, justify="center")
+        console.print(main_menu, justify="center")
+        console.print(help_menu, justify="center")
+
+        choice = input("Choix: ")
+        if choice == '1':
+            return match.player1
+        elif choice == '2':
+            return match.player2
+        else:
+            return None  # draw
+
+    """
+    Errors display message
+    """
+    def display_no_tournament(self):
+        header_menu = Panel(
+            "Vous devez d'abord créer un tournoi",
+            title="ERREUR",
+            width=panel_width,
+            style="bold blue")
+
+        main_menu = Panel("Il n'y a pas de tournoi actif")
+
+        help_menu = Panel("Veuillez revenir au menu principal et créer un tournoi",
+                          title="AIDE",
+                          border_style="green",
+                          width=panel_width,
+                          style="bold green")
+
+        console.print(header_menu, justify="center")
+        console.print(main_menu, justify="center")
+        console.print(help_menu, justify="center")
+
+    def display_round_over(self):
+        header_menu = Panel(
+            "Les rounds sont tous terminés, le tournoi est achevé",
+            title="TOURNOI TERMINÉ",
+            width=panel_width,
+            style="bold blue")
+
+        main_menu = Panel("Tous les rounds sont terminés")
+
+        help_menu = Panel("Veuillez revenir au menu principal et créer un nouveau tournoi",
+                          title="AIDE",
+                          border_style="green",
+                          width=panel_width,
+                          style="bold green")
+
+        console.print(header_menu, justify="center")
+        console.print(main_menu, justify="center")
+        console.print(help_menu, justify="center")
+
+    def display_no_pair_players(self):
+        header_menu = Panel(
+            "Le nombre de joueurs est impair",
+            title="IMPOSSIBLE DE DÉMARRER LE TOURNOI",
+            width=panel_width,
+            style="bold blue")
+
+        main_menu = Panel("Il faut que les joueurs soient en nombre pair pour pouvoir démarrer les rounds")
+
+        help_menu = Panel("Veuillez revenir au menu principal > Gérer les joueurs et créer de nouveaux joueurs",
+                          title="AIDE",
+                          border_style="green",
+                          width=panel_width,
+                          style="bold green")
+
+        console.print(header_menu, justify="center")
+        console.print(main_menu, justify="center")
+        console.print(help_menu, justify="center")
+    def display_draw_message(self):
+        console.print("Match nul entre {match.player1.name} et {match.player2.name}")
+
+    def display_match(self, match, current_round, total_rounds):
+        header_menu = Panel(
+            "Liste des matches pour le round actuel",
+            title=f"MATCHES EN COURS : ROUND {current_round} / {total_rounds}",
+            width=panel_width,
+            style="bold blue")
+
+        help_menu = Panel("Détails des joueurs qui disputent les matches",
+                          title="AIDE",
+                          border_style="green",
+                          width=panel_width,
+                          style="bold green")
+
+        table = Table()
+        table.add_column("ID")
+        table.add_column("Player 1")
+        table.add_column("Player 2")
+        table.add_row(str(match.match_id), match.player1.name, match.player2.name)
+
+        # display menus
+        console.print(header_menu, justify="center")
+        console.print(table, justify="center")
+        console.print(help_menu, justify="center")
+
+    def show_all_tournaments(self):
+        print("Tous les tournois")
+
+    def display_current_round_number(self, current_round, total_rounds):
+        header_menu = Panel(
+            f"Le round {current_round} est actuellement en cours",
+            title=f"ROUND {current_round} sur un total de {total_rounds}",
+            width=panel_width,
+            style="bold blue")
+
+        help_menu = Panel("Rounds du tournoi lancé",
+                          title="AIDE",
+                          border_style="green",
+                          width=panel_width,
+                          style="bold green")
+
+        console.print(header_menu, justify="center")
+        console.print(help_menu, justify="center")

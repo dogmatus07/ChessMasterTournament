@@ -1,7 +1,9 @@
+import random
+import uuid
 from view import View
 from models import Player
 from models import Tournament
-from models import Round
+from models import Match
 from faker import Faker
 import time
 
@@ -28,7 +30,7 @@ class Controller:
                 self.view.return_main_menu()
                 self.view.clear_screen()
             elif main_menu_choice == 2:  # Launch Tournament
-                self.launch_tournament()
+                self.start_tournament_round()
             elif main_menu_choice == 3:  # Manage Players
                 while True:
                     self.view.clear_screen()
@@ -65,7 +67,7 @@ class Controller:
                     if menu_report_choice == 1:  # Players Statistics
                         print("Statistiques des joueurs")
                     elif menu_report_choice == 2:  # Display all tournaments
-                        self.show_all_tournaments()
+                        self.view.show_all_tournaments()
                         time.sleep(2)
                     elif menu_report_choice == 3:  # Display all rounds
                         print("Liste des rounds")
@@ -97,62 +99,43 @@ class Controller:
     def edit_player(self):
         print(f"Modification joueur")
 
-    def update_score(self, points):
-        """
-        This will update the player's score :
-        win : 1 point
-        square : 0.5 point
-        defeat : 0 point
-        """
-        pass
-
     def create_tournament(self, name, location, start_date, end_date, description):
         self.current_tournament = Tournament(name, location, start_date, end_date, description)
         return self.current_tournament
 
-    def launch_tournament(self):
-        while True:
-            if self.current_tournament:
-                self.view.display_players(self.current_tournament.players)
-                # Ask confirmation to start the round
-                ask_start_round_choice = self.view.ask_start_round()
-                if ask_start_round_choice == 1:
-                    # Start the first round
-                    time.sleep(10)
-                    round_name = self.start_round()
-                    self.view.menu_start_round(round_name)
-                    time.sleep(10)
-                else:
-                    break
+    def pair_players(self):
+        if self.current_tournament.current_round_number == 1:
+            random.shuffle(self.current_tournament.players)
+            matches = [
+                Match(uuid.uuid4(),
+                      self.current_tournament.players[i],
+                      self.current_tournament.players[i + 1])
+                for i in range(0, len(self.current_tournament.players), 2)]
+            return matches
 
-    def start_round(self):
-        round_name = ""
-        if self.current_tournament:
-            new_round_number = len(self.current_tournament.rounds) + 1
-            round_name = f"Round {new_round_number}"
-            if new_round_number <= self.current_tournament.number_of_rounds:
-                self.current_tournament.start_new_round(round_name)
-                print(f"Démarrage du {round_name}")
-            else:
-                print("Nombre maximum de tours atteint")
-        else:
-            print("Aucun tournoi actif, veuillez en créer")
-        return round_name
+    def start_tournament_round(self):
+        if not self.current_tournament:
+            self.view.display_no_tournament()
+            time.sleep(7)
+            return
 
-    def close_current_round(self):
-        if self.current_tournament and self.current_tournament.rounds:
-            current_round = self.current_tournament.rounds[-1]
-            if not current_round.is_complete:
-                current_round.close_round()
-                print(f"Le {current_round.name} est maintenant terminé")
-            else:
-                print("Le dernier round est déjà terminé")
-        else:
-            print("Aucun tournoi actif et aucun round trouvé")
+        while self.current_tournament.current_round_number <= self.current_tournament.number_of_rounds:
+            if self.current_tournament.current_round_number > self.current_tournament.number_of_rounds:
+                self.view.display_round_over()
+                time.sleep(7)
 
-    def resume_tournament(self):
-        self.view.display_resume_tournament()
+            if len(self.current_tournament.players) % 2 != 0:
+                self.view.display_no_pair_players()
+                time.sleep(7)
+                return
 
-    def show_all_tournaments(self):
-        all_tournaments = Tournament.all_tournaments
-        self.view.display_all_tournaments(all_tournaments)
+            matches = self.pair_players()
+            for match in matches:
+                self.view.display_match(
+                    match,
+                    self.current_tournament.current_round_number,
+                    self.current_tournament.number_of_rounds)  # display match
+                result = self.view.ask_match_result(match)  # ask match result
+                match.set_result(result)  # update result and score
+
+            self.current_tournament.current_round_number += 1

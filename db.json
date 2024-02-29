@@ -1,0 +1,107 @@
+{
+  "tournament": {
+    "1": {
+      "tournament_id": null,
+      "name": "Tournoi National d'Echecs 2024",
+      "location": "Paris, France",
+      "start_date": "17/04/2024",
+      "end_date": "17/05/2024",
+      "description": "Tournoi \u00e0 4 rounds, 8 joueurs",
+      "rounds": [],
+      "matches": [],
+      "players": []
+    }
+  },
+  "player": {
+    "1": {
+      "player_id": null,
+      "first_name": "Penot",
+      "last_name": "St\u00e9phane",
+      "gender": "H",
+      "birthday": "12/04/2000",
+      "chess_id": "FR15874",
+      "score": 0
+    },
+    "2": {
+      "player_id": null,
+      "first_name": "Blut",
+      "last_name": "Marie-Claire",
+      "gender": "F",
+      "birthday": "14/04/1988",
+      "chess_id": "FR16357",
+      "score": 0
+    },
+    "3": {
+      "player_id": null,
+      "first_name": "Moss",
+      "last_name": "Emily",
+      "gender": "F",
+      "birthday": "07/04/1983",
+      "chess_id": "UK15896",
+      "score": 0
+    },
+    "4": {
+      "player_id": null,
+      "first_name": "Lemoine",
+      "last_name": "Thierry",
+      "gender": "H",
+      "birthday": "12/09/1995",
+      "chess_id": "BE15879",
+      "score": 0
+    },
+    "5": {
+      "player_id": null,
+      "first_name": "Selbonne",
+      "last_name": "Paula",
+      "gender": "F",
+      "birthday": "15/08/1978",
+      "chess_id": "FR16985",
+      "score": 0
+    },
+    "6": {
+      "player_id": null,
+      "first_name": "Weber",
+      "last_name": "Christophe",
+      "gender": "H",
+      "birthday": "06/06/1999",
+      "chess_id": "FR12583",
+      "score": 0
+    },
+    "7": {
+      "player_id": null,
+      "first_name": "Margoton",
+      "last_name": "M\u00e9lanie",
+      "gender": "F",
+      "birthday": "12/07/1981",
+      "chess_id": "SW65397",
+      "score": 0
+    },
+    "8": {
+      "player_id": null,
+      "first_name": "Sovergn",
+      "last_name": "Ingrid",
+      "gender": "F",
+      "birthday": "03/03/1986",
+      "chess_id": "DE36594",
+      "score": 0
+    },
+    "9": {
+      "player_id": null,
+      "first_name": "Svenn",
+      "last_name": "Christian",
+      "gender": "H",
+      "birthday": "14/09/1977",
+      "chess_id": "SW15826",
+      "score": 0
+    },
+    "10": {
+      "player_id": null,
+      "first_name": "Provost",
+      "last_name": "Daniel",
+      "gender": "H",
+      "birthday": "12/02/1982",
+      "chess_id": "FR65321",
+      "score": 0
+    }
+  }
+}

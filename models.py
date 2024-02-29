@@ -1,155 +1,242 @@
-import uuid
 from datetime import datetime
+from enum import Enum, auto
+
+
+class TournamentStatus(Enum):
+    PENDING = auto()
+    IN_PROGRESS = auto()
+    FINISHED = auto()
+
+
 class Tournament:
     """
-    This class represent a tournament
+    This class represents a tournament.
     """
-    tournament_count = 0
-    all_tournaments = {}
 
-    def __init__(self, name, location, start_date, end_date, description, number_of_rounds=4):
-
-        Tournament.tournament_count += 1
-        self.tournament_id = uuid.uuid4()
+    def __init__(self,
+                 name,
+                 location,
+                 start_date,
+                 end_date,
+                 description,
+                 round_ids=None,
+                 match_ids=None,
+                 player_ids=None,
+                 tournament_id=None,
+                 current_round_id=None,
+                 status=TournamentStatus.PENDING):
+        self.tournament_id = tournament_id
         self.name = name
         self.location = location
         self.start_date = start_date
         self.end_date = end_date
         self.description = description
-        self.number_of_rounds = number_of_rounds
-        self.current_round_number = 1
-        self.players = []  # players list
-        self.rounds = []  # rounds list
-        self.all_tournaments[self.tournament_count] = self
-
-    def add_player(self, player):
-        self.players.append(player)
-
-    def start_new_round(self, round_name):
-        if len(self.rounds) < self.number_of_rounds:
-            current_round_id = len(self.rounds) + 1
-            new_round = Round(
-                name=round_name,
-                current_round_id=current_round_id,
-                matches=[],
-                start_date=datetime.now(),
-                end_date=None,
-                is_complete=False)
-            self.rounds.append(new_round)
-            print(f"Nouveau tour démarré : {round_name}")
-        else:
-            print(f"Nombre maximum de tours atteint")
+        self.round_ids = []  # will contain the list of rounds id
+        self.match_ids = []  # will contain the list of matches id
+        self.player_ids = []  # will contain the list of players id
+        self.current_round_id = current_round_id
+        self.status = status
 
     def __str__(self):
-        return (
-            f"ID Tournoi : {self.tournament_id} "
-            f"Nom : {self.name} "
-            f"Lieu : {self.location} "
-            f"Date de Début : {self.start_date} "
-            f"Date de fin : {self.end_date} "
-            f"Description : {self.description} "
-        )
+        return (f"Tournament ID : {self.tournament_id}\n"
+                f"Name : {self.name}\n"
+                f"Location : {self.location}\n"
+                f"Start Date : {self.start_date.strftime('%d/%m/%Y')}\n"
+                f"End Date : {self.end_date.strftime('%d/%m/%Y')}\n"
+                f"Description : {self.description}\n"
+                f"Rounds : {self.round_ids}\n"
+                f"Matches : {self.match_ids}\n"
+                f"Players : {self.player_ids}\n")
+
+    def serialize(self):
+        return {
+            "tournament_id": self.tournament_id,
+            "name": self.name,
+            "location": self.location,
+            "start_date": self.start_date.strftime("%d/%m/%Y"),
+            "end_date": self.end_date.strftime("%d/%m/%Y"),
+            "description": self.description,
+            "rounds": self.round_ids,
+            "matches": self.match_ids,
+            "players": self.player_ids
+        }
+
+    @classmethod
+    def deserialize(cls, data):
+        start_date = datetime.strptime(data['start_date'], "%d/%m/%Y")
+        end_date = datetime.strptime(data['end_date'], "%d/%m/%Y")
+        tournament_id = data.doc_id
+        return cls(data["name"],
+                   data["location"],
+                   start_date,
+                   end_date,
+                   data["description"],
+                   data.get('rounds', []),
+                   data.get('matches', []),
+                   data.get('players', []),
+                   tournament_id=tournament_id)
 
 
-class Player:
+class RoundStatus(Enum):
     """
-    This class represent a Player
+    This class represents the status of a round.
     """
-    player_count = 0  # will be used for a unique player_id
-    all_players = {}
+    PENDING = auto()
+    IN_PROGRESS = auto()
+    FINISHED = auto()
 
-    def __init__(
-            self,
-            first_name,
-            last_name,
-            gender,
-            birthdate,
-            chess_id,
-            score=0):
-        Player.player_count += 1  # everytime a player is created
-        self.player_id = Player.player_count
-        self.first_name = first_name
-        self.last_name = last_name
-        self.gender = gender
-        self.birthdate = birthdate
-        self.score = score
-        self.chess_id = chess_id  # Two letters followed by five digits
-        self.match_won = []
-        self.match_lost = []
-
-        Player.all_players[self.player_id] = self
-
-    @property
-    def name(self):
-        return f"{self.first_name} {self.last_name}"
-
-    def update_score(self, points: float):
-        self.score += points
-        return self.score
-
-
-    def __str__(self):
-        return (
-            f"Identifiant : {self.player_id}, "
-            f"Nom & Prénoms : {self.first_name} {self.last_name}, "
-            f"Date de naissance : {self.birthdate}, "
-            f"Chess ID : {self.chess_id}, "
-            f"Score : {self.score}"
-        )
 
 class Round:
     """
     This class represent a round
     """
-    def __init__(self, name, current_round_id, matches, start_date, end_date, is_complete, round_number=4):
-        self.name = name
-        self.current_round_id = current_round_id
-        self.matches = matches if matches is not None else []
-        self.start_date = start_date
-        self.end_date = end_date
-        self.is_complete = is_complete
-        self.round_number = round_number
 
-    def close_round(self):
-        self.end_date = datetime.now()
-        self.is_complete = True
+    def __init__(self,
+                 tournament_id,
+                 match_ids=None,
+                 player_ids=None,
+                 status=RoundStatus.PENDING,
+                 round_id=None):
+        self.round_id = round_id
+        self.tournament_id = tournament_id
+        self.match_ids = []  # will contain match ids for the round
+        self.player_ids = []  # will contain player_ids who play for that round
+        self.status = RoundStatus.PENDING  # initial state of the round
+
+    def set_start_round_status(self):
+        self.status = RoundStatus.IN_PROGRESS
+
+    def set_end_round_status(self):
+        self.status = RoundStatus.FINISHED
 
     def __str__(self):
-        return f"Round Number: {self.round_number}, Matches: {self.matches}, Status: {self.is_complete}"
+        return (f"round_id : {self.round_id}\n"
+                f"tournament_id : {self.tournament_id}\n"
+                f"match_ids : {self.match_ids}\n"
+                f"player_ids : {self.player_ids}\n"
+                f"status : {self.status.name}\n")
+
+    def serialize(self):
+        return {
+            "round_id": self.round_id,
+            "tournament_id": self.tournament_id,
+            "match_ids": self.match_ids,
+            "player_ids": self.player_ids,
+            "status": self.status.name
+        }
+
+    @classmethod
+    def deserialize(cls, data):
+        round_id = data.doc_id
+        status = RoundStatus[data["status"]]
+        return cls(tournament_id=data['tournament_id'],
+                   match_ids=data.get('match_ids', []),
+                   player_ids=data.get('player_ids', []),
+                   status=status,
+                   round_id=round_id)
 
 
 class Match:
     """
-    This class represent a Match
+    This class represent a match
     """
 
-    def __init__(self, match_id, player1, player2):
+    def __init__(self,
+                 round_id,
+                 player1_id,
+                 player2_id,
+                 winner=None,
+                 match_id=None):
         self.match_id = match_id
-        self.player1 = player1
-        self.player2 = player2
+        self.round_id = round_id
+        self.player1_id = player1_id
+        self.player2_id = player2_id
         self.winner = None
-        self.loser = None
-        self.result = None
-
-    def set_result(self, winner=None):
-        if winner is None:
-            self.result = 'draw'
-            self.player1.score += 0.5
-            self.player2.score += 0.5
-        elif winner == self.player1:
-            self.result = 'player1'
-            self.player1.score += 1
-        else:
-            self.result = 'player2'
-            self.player2.score += 1
-
-
-
 
     def __str__(self):
-        return (
-            f"Match ID : {self.match_id}, "
-            f"Player 1: {self.player1}, "
-            f"Player2: {self.player2}, "
-            f"Match Results: {self.match_result}",
-        )
+        return (f"round_id : {self.round_id}\n"
+                f"match_id : {self.match_id}\n"
+                f"player1_id : {self.player1_id}\n"
+                f"player2_id : {self.player2_id}\n"
+                f"winner : {'None' if self.winner is None else self.winner}\n")
+
+    def serialize(self):
+        return {
+            "round_id": self.round_id,
+            "match_id": self.match_id,
+            "player1_id": self.player1_id,
+            "player2_id": self.player2_id,
+            "winner": self.winner
+        }
+
+    @classmethod
+    def deserialize(cls, data):
+        match_id = data.doc_id
+        return cls(data['round_id'],
+                   data['player1_id'],
+                   data['player2_id'],
+                   data['winner'],
+                   match_id=match_id)
+
+    def set_match_result(self, winner_id):
+        """
+        Winner : 1
+        Loser : 0
+        Draw : 0.5 for each player
+        """
+        self.winner = winner_id  # id of the winner
+
+
+class Player:
+    """
+    This class represent a player
+    """
+
+    def __init__(self,
+                 first_name,
+                 last_name,
+                 gender,
+                 birthday,
+                 chess_id,
+                 tournament_id=None,
+                 score=0,
+                 player_id=None):
+        self.player_id = player_id
+        self.tournament_id = tournament_id
+        self.first_name = first_name
+        self.last_name = last_name
+        self.gender = gender
+        self.birthday = birthday
+        self.chess_id = chess_id
+        self.score = score
+
+    def __str__(self):
+        return (f"player_id : {self.player_id}\n"
+                f"first_name : {self.first_name}\n"
+                f"last_name : {self.last_name}\n"
+                f"gender : {self.gender}\n"
+                f"birthday : {self.birthday.strftime('%d/%m/%Y')}\n"
+                f"chess_id : {self.chess_id}\n"
+                f"score : {self.score}\n")
+
+    def serialize(self):
+        return {
+            "player_id": self.player_id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "gender": self.gender,
+            "birthday": self.birthday,
+            "chess_id": self.chess_id,
+            "score": self.score
+        }
+
+    @classmethod
+    def deserialize(cls, data):
+        player_id = data.doc_id
+        return cls(data['first_name'],
+                   data['last_name'],
+                   data['gender'],
+                   data['birthday'],
+                   data['chess_id'],
+                   data['score'],
+                   player_id=player_id)

@@ -20,10 +20,12 @@ class Controller:
         self.db_manager = DatabaseManager()
         self.menu_actions = {
             1: self.create_tournament,
-            2: self.launch_tournament,
-            3: self.manage_players,
-            4: self.show_reports,
-            5: self.exit_app
+            2: self.add_participants,
+            3: self.launch_tournament,
+            4: self.manage_rounds,
+            5: self.manage_players,
+            6: self.show_reports,
+            7: self.exit_app
         }
 
     """
@@ -68,13 +70,14 @@ class Controller:
         time.sleep(3)
         self.main_loop()
 
-    def launch_tournament(self):
+    def add_participants(self):
         self.view.clear_screen()
         tournaments = self.db_manager.list_tournaments()
         self.view.display_tournament_list(tournaments)
 
         # ask user to choose tournament
         tournament_choice = int(self.view.ask_tournament_id())
+
 
         # check if tournament exist
         tournament = self.db_manager.get_tournament(tournament_choice)
@@ -85,17 +88,128 @@ class Controller:
         self.add_players_to_tournament(tournament_choice)
 
         self.view.clear_screen()
-        self.view.display_tournament_details(tournament)
+        self.view.display_tournament_details(tournaments)
         self.view.press_any_key_to_continue()
 
-    def initialize_rounds(self, tournament_id):
+        """
+        # start first round
+        self.view.clear_screen()
+        self.back_to_main_menu()
+        """
+
+    def launch_tournament(self):
+        self.view.clear_screen()
+        tournaments = self.db_manager.list_tournaments()
+        self.view.display_tournament_list(tournaments)
+
+        # ask user to choose tournament
+        tournament_id = self.view.ask_tournament_id()
+
+        # check if tournament exist and players are 8
+        tournament = self.db_manager.get_tournament(tournament_id)
+        if not tournament or len(tournament['players']) < 8:
+            self.view.display_error_message()
+            return
+
+        # create all rounds for the tournament
+        self.create_rounds(tournament_id)
+
+        # prepare first round and matches
+        self.prepare_and_start_first_round(tournament_id)
+
+    def prepare_and_start_first_round(self, tournament_id):
+        player_ids = self.db_manager.get_tournament_players(tournament_id)
+        print(f"Player IDs: {player_ids}")
+        time.sleep(10)
+
+        random.shuffle(player_ids)
+
+        matches = []
+
+        for i in range(0, len(player_ids), 2):
+            player1_id = player_ids[i]
+            player2_id = player_ids[i + 1]
+
+            # get players infos
+            player1 = self.db_manager.get_player(player1_id)
+            player2 = self.db_manager.get_player(player2_id)
+
+            # names
+            player1_name = player1['first_name'] if player1 else "Inconnu"
+            player2_name = player2['first_name'] if player2 else "Inconnu"
+
+            # match creation
+            match = Match(round_id=1, player1_id=player1_id, player2_id=player2_id)
+            match_id = self.db_manager.add_match(
+                match.serialize())
+
+            # match info to display
+            match_info = {
+                'match_id': match_id,
+                'player1_id': player1_id,
+                'player2_id': player2_id,
+                'player1_name': player1_name,
+                'player2_name': player2_name,
+            }
+            matches.append(match_info)
+
+        # update tournament status
+        self.db_manager.update_tournament(tournament_id,
+                                          {'current_round': 1, 'status': TournamentStatus.IN_PROGRESS.name})
+
+        # update round status
+        round_id = 1
+        self.db_manager.update_round(round_id, {'matches': matches, 'status': RoundStatus.IN_PROGRESS.name})
+
+        # display matches
+        self.view.display_all_first_round_matches(matches)
+
+        # ask scores for those matches
+        self.view.press_any_key_to_continue()
+
+    def manage_rounds(self):
+        self.view.clear_screen()
+        self.back_to_main_menu()
+
+    def create_rounds(self, tournament_id):
+        print("create rounds initiated")
+        # check if tournament exist
+        tournament = self.db_manager.get_tournament(tournament_id)
+        if not tournament:
+            self.view.display_error_message()
+            return
+
+        # check if rounds exists and not >4
+        rounds = self.db_manager.list_rounds(tournament_id)
+        if len(rounds) > 4:
+            print("Nombre de rounds maximum atteint")
+            time.sleep(2)
+            self.back_to_main_menu()
+
+        # display round operation
+        self.view.display_round_creation()
+        time.sleep(3)
         # create 4 rounds
+        rounds_created = []
         for i in range(1, 5):
-            round = Round(round_id=i, tournament_id=tournament_id)
-            round_serialized = round.serialize()
+            round_data = Round(round_id=i, tournament_id=tournament_id)
+            round_created = self.db_manager.get_round(round_id=i)
+            rounds_created.append(round_created)
+            round_serialized = round_data.serialize()
             self.db_manager.add_round(round_serialized)
 
-    def start_first_round(self, tournament_id):
+        # update tournament to store its rounds
+        self.db_manager.update_tournament(tournament_id, {'rounds': rounds_created})
+
+        time.sleep(2)
+        self.view.display_success_message()
+        rounds_created = self.db_manager.list_rounds(tournament_id)
+        self.view.display_list_of_rounds(rounds_created)
+
+    def create_matches(self, round_id):
+        pass
+
+    def start_rounds(self, tournament_id):
         # get all registered players for the tournament
         tournament = self.db_manager.get_tournament(tournament_id)
         player_ids = tournament.get('players', [])
@@ -132,6 +246,9 @@ class Controller:
             'current_round_id': 1,
             'status': TournamentStatus.IN_PROGRESS
         })
+
+    def resume_rounds(self):
+        pass
 
     def check_tournament_players(self, tournament_id):
         players = self.db_manager.get_tournament_players(tournament_id)
@@ -361,7 +478,7 @@ class Controller:
                                           {'players': list(registered_players)})
 
     def register_player_to_tournament(self, tournament_id, player_id):
-        # tournament informations
+        # tournament infos
         tournament_data = self.db_manager.get_tournament(tournament_id)
         if not tournament_data:
             print("Tournoi non trouvé.")

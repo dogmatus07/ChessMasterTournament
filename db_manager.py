@@ -88,12 +88,14 @@ class DatabaseManager:
         return self.tournament_table.all()
 
     def list_rounds(self, tournament_id):
-        rounds = self.round_table.all(Query().tournament_id == tournament_id)
-        for round in rounds:
-            print(round)
+        query = Query()
+        rounds = self.round_table.search(query.tournament_id == tournament_id)
+        return rounds
+
 
     def list_matches(self, round_id):
-        matches = self.match_table.all(Query().round_id == round_id)
+        query = Query()
+        matches = self.match_table.all(query.round_id == round_id)
         for match in matches:
             print(match)
 
@@ -101,5 +103,8 @@ class DatabaseManager:
         return self.player_table.all()
 
     def get_tournament_players(self, tournament_id):
-        players = self.player_table.search(Query().tournament_id == tournament_id)
-        return players
+        tournament = self.tournament_table.get(doc_id=tournament_id)
+        if tournament:
+            player_ids = tournament.get('players', [])
+            return player_ids
+        return []

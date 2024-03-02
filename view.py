@@ -29,10 +29,12 @@ class View:
 
         options_menu = Panel(
             "\n1. Créer un tournoi"
-            "\n2. Démarrer un tournoi"
-            "\n3. Gérer les joueurs"
-            "\n4. Rapport et Statistiques"
-            "\n5. Quitter",
+            "\n2. Ajouter des participants"
+            "\n3. Démarrer le tournoi"
+            "\n4. Gérer les rounds"
+            "\n5. Gérer les joueurs"
+            "\n6. Rapport et Statistiques"
+            "\n7. Quitter",
             border_style="blue",
             width=panel_width)
 
@@ -71,14 +73,63 @@ class View:
         console.print(players_options_menu, justify="center")
         console.print(help_menu, justify="center")
 
-    def display_menu_tournament(self):
-        console.print("MENU TOURNOI", style="bold blue")
-        print("[1] Créer un tournoi")
-        print("[2] Lancer un tournoi")
-        print("[3] Reprendre un tournoi")
-        print("[4] Retour au menu principal")
-        tournament_menu_choice = int(input("Quel est votre choix :"))
-        return tournament_menu_choice
+    def app_round_menu(self):
+        menu_rounds = Panel("Gérer les rounds",
+                            title="MENU ROUNDS",
+                            width=panel_width,
+                            style="bold blue")
+
+        round_menu_options = Panel(
+            "\n1. Créer rounds"
+            "\n2. Démarrer un round"
+            "\n3. Reprendre un round"
+            "\n4. Retour au menu principal",
+            width=panel_width)
+
+        help_menu = Panel("Ajoutez, démarrez ou reprenez des rounds",
+                          title="AIDE",
+                          border_style="green",
+                          width=panel_width,
+                          style="bold green")
+        # display menus
+        console.print(menu_rounds, justify="center")
+        console.print(round_menu_options, justify="center")
+        console.print(help_menu, justify="center")
+
+    def display_round_creation(self):
+        print("Création des rounds 1 à 4 en cours...")
+
+    def display_list_of_rounds(self, rounds_created):
+        if rounds_created is None:
+            print("Aucun round trouvé ou liste vide")
+            return
+        header_menu = Panel("Rounds disponibles pour ce tournoi",
+                            title="MENU TOURNOI ",
+                            width=panel_width,
+                            style="bold green")
+        table = Table()
+        table.add_column("Round ID", style="bold magenta")
+        table.add_column("Status", style="bold magenta")
+        for i in rounds_created:
+            table.add_row(str(i.doc_id), i["status"])
+
+            help_menu = Panel(
+                "Etape suivante : démarrer le premier round",
+                title="AIDE",
+                style="bold green",
+                width=panel_width)
+
+            console.print(header_menu, justify="center")
+            console.print(help_menu, justify="center")
+
+        def display_menu_tournament(self):
+            console.print("MENU TOURNOI", style="bold blue")
+            print("[1] Créer un tournoi")
+            print("[2] Lancer un tournoi")
+            print("[3] Reprendre un tournoi")
+            print("[4] Retour au menu principal")
+            tournament_menu_choice = int(input("Quel est votre choix :"))
+            return tournament_menu_choice
 
     def display_menu_report(self):
         console.print("MENU RAPPORT", style="bold blue")
@@ -141,15 +192,19 @@ class View:
         table.add_column("Joueur 1", style="blue")
         table.add_column("Joueur 2", style="yellow")
         table.add_column("Score", style="magenta")
-        table.add_column("Date", style="green")
+
         if matches:
             for match in matches:
-                table.add_row(str(match.match_id), str(match.player1),
-                              str(match.player2), str(match.score), str(match.date))
+                table.add_row(
+                    str(match['match_id']),
+                    str(match['player1_name']),
+                    str(match['player2_name']),
+                    str(match.get('score', 'N/A')),
+                )
 
-        console.print(table, style="justify")
+        console.print(table, justify="center")
         console.print(header_menu, justify="center")
-        console.print(help_menu, style="justify")
+        console.print(help_menu, justify="center")
 
     """
     GET INFORMATIONS FROM USER
@@ -298,7 +353,7 @@ class View:
     def ask_tournament_id(self):
         console.print("Veuillez renseigner l'ID du tournoi", style="bold blue")
         user_choice = input(":")
-        return user_choice
+        return int(user_choice)
 
     def ask_player_id(self):
         console.print("Veuillez choisir le joueur à inscrire au tournoi",
@@ -441,7 +496,7 @@ class View:
 
     def display_tournament_details(self, tournament):
         header_menu = Panel(
-            f"Détails à propos du tournoi suivant : {tournament['name']}",
+            f"Détails à propos du tournoi suivant : ",
             title="MENU TOURNOI",
             width=panel_width,
             style="bold green")

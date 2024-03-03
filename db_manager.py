@@ -16,16 +16,20 @@ class DatabaseManager:
     """
 
     def add_tournament(self, tournament):
-        self.tournament_table.insert(tournament)
+        tournament_id = self.tournament_table.insert(tournament)
+        return tournament_id
 
-    def add_round(self, round):
-        self.round_table.insert(round)
+    def add_round(self, round_data):
+        round_id = self.round_table.insert(round_data)
+        return round_id
 
     def add_match(self, match):
-        self.match_table.insert(match)
+        match_id = self.match_table.insert(match)
+        return match_id
 
-    def add_player(self, player):
-        self.player_table.insert(player)
+    def add_player(self, player_data):
+        player_id = self.player_table.insert(player_data)
+        return player_id
 
     """
     Get Methods

@@ -4,7 +4,6 @@ import random
 import time
 from enum import Enum, auto
 from tinydb import TinyDB, Query
-
 from rich.padding import PaddingDimensions
 
 from db_manager import DatabaseManager
@@ -60,7 +59,10 @@ class Controller:
         tournament_serialized = tournament.serialize()
 
         # add to the database
-        self.db_manager.add_tournament(tournament_serialized)
+        doc_id = self.db_manager.add_tournament(tournament_serialized)
+
+        # update the tournament_id with the doc_id by TinyDB
+        self.db_manager.update_tournament(doc_id, {'tournament_id': doc_id})
 
         # display success message and table of tournaments
         self.view.clear_screen()
@@ -78,18 +80,17 @@ class Controller:
         # ask user to choose tournament
         tournament_choice = int(self.view.ask_tournament_id())
 
-
         # check if tournament exist
         tournament = self.db_manager.get_tournament(tournament_choice)
-        if not tournament:
+        if tournament:
+            tournament['doc_id'] = tournament_choice
+            self.add_players_to_tournament(tournament_choice)
+            self.view.clear_screen()
+            self.view.display_tournament_details(tournament)
+            self.view.press_any_key_to_continue()
+
+        else:
             self.view.display_error_message()
-            return
-
-        self.add_players_to_tournament(tournament_choice)
-
-        self.view.clear_screen()
-        self.view.display_tournament_details(tournaments)
-        self.view.press_any_key_to_continue()
 
         """
         # start first round
@@ -135,8 +136,8 @@ class Controller:
             player2 = self.db_manager.get_player(player2_id)
 
             # names
-            player1_name = player1['first_name'] if player1 else "Inconnu"
-            player2_name = player2['first_name'] if player2 else "Inconnu"
+            player1_name = f"{player1['first_name']} {player1['last_name']}" if player1 else "Inconnu"
+            player2_name = f"{player2['first_name']} {player2['last_name']}" if player2 else "Inconnu"
 
             # match creation
             match = Match(round_id=1, player1_id=player1_id, player2_id=player2_id)
@@ -192,12 +193,12 @@ class Controller:
         # create 4 rounds
         rounds_created = []
         for i in range(1, 5):
-            round_data = Round(round_id=i, tournament_id=tournament_id)
-            round_created = self.db_manager.get_round(round_id=i)
-            rounds_created.append(round_created)
+            round_data = Round(tournament_id=tournament_id)
             round_serialized = round_data.serialize()
-            self.db_manager.add_round(round_serialized)
-
+            round_id = self.db_manager.add_round(round_serialized)
+            rounds_created.append(round_id)
+        print(rounds_created)
+        time.sleep(5)
         # update tournament to store its rounds
         self.db_manager.update_tournament(tournament_id, {'rounds': rounds_created})
 
@@ -427,7 +428,10 @@ class Controller:
             player_serialized = player.serialize()
 
             # add player to database
-            self.db_manager.add_player(player_serialized)
+            doc_id = self.db_manager.add_player(player_serialized)
+
+            # update the player_id with the doc_id by TinyDB
+            self.db_manager.update_player(doc_id, {'player_id': doc_id})
 
             # display success message
             self.view.display_success_message()

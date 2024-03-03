@@ -22,10 +22,10 @@ class Tournament:
                  round_ids=None,
                  match_ids=None,
                  player_ids=None,
-                 tournament_id=None,
+                 doc_id=None,
                  current_round_id=None,
                  status=TournamentStatus.PENDING):
-        self.tournament_id = tournament_id
+        self.doc_id = doc_id
         self.name = name
         self.location = location
         self.start_date = start_date
@@ -38,7 +38,7 @@ class Tournament:
         self.status = status
 
     def __str__(self):
-        return (f"Tournament ID : {self.tournament_id}\n"
+        return (f"Tournament ID : {self.doc_id}\n"
                 f"Name : {self.name}\n"
                 f"Location : {self.location}\n"
                 f"Start Date : {self.start_date.strftime('%d/%m/%Y')}\n"
@@ -50,7 +50,6 @@ class Tournament:
 
     def serialize(self):
         return {
-            "tournament_id": self.tournament_id,
             "name": self.name,
             "location": self.location,
             "start_date": self.start_date.strftime("%d/%m/%Y"),
@@ -74,7 +73,7 @@ class Tournament:
                    data.get('rounds', []),
                    data.get('matches', []),
                    data.get('players', []),
-                   tournament_id=tournament_id)
+                   )
 
 
 class RoundStatus(Enum):
@@ -200,8 +199,9 @@ class Player:
                  chess_id,
                  tournament_id=None,
                  score=0,
-                 player_id=None):
-        self.player_id = player_id
+                 doc_id=None,
+                 ):
+        self.doc_id = doc_id
         self.tournament_id = tournament_id
         self.first_name = first_name
         self.last_name = last_name
@@ -211,7 +211,7 @@ class Player:
         self.score = score
 
     def __str__(self):
-        return (f"player_id : {self.player_id}\n"
+        return (f"player_id : {self.doc_id}\n"
                 f"first_name : {self.first_name}\n"
                 f"last_name : {self.last_name}\n"
                 f"gender : {self.gender}\n"
@@ -221,7 +221,6 @@ class Player:
 
     def serialize(self):
         return {
-            "player_id": self.player_id,
             "first_name": self.first_name,
             "last_name": self.last_name,
             "gender": self.gender,

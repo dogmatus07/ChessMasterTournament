@@ -501,10 +501,10 @@ class View:
             width=panel_width,
             style="bold green")
 
-        table = Table(title=f"Détails du tournoi : {tournament['name']}")
+        table = Table()
         table.add_column("Libellé", style="bold magenta")
         table.add_column("Description", style="bold magenta")
-        table.add_row("ID", str(tournament.doc_id))
+        table.add_row("ID", str(tournament['doc_id']))
         table.add_row("Nom", tournament["name"])
         table.add_row("Lieu", tournament["location"])
         table.add_row("Date début", tournament["start_date"])

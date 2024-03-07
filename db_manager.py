@@ -68,6 +68,25 @@ class DatabaseManager:
     def update_player(self, player_id, player):
         self.player_table.update(player, doc_ids=[player_id])
 
+    def increment_player_score(self, player_id, increment):
+        player = self.get_player(player_id)
+        if player is not None:
+            new_score = player['score'] + increment
+            self.update_player(player_id, {'score': new_score})
+
+    def update_match_winner(self, match_id, winner_id):
+        self.match_table.update({'winner': winner_id}, doc_ids=[match_id])
+
+    def update_round_matches(self, round_id, matches, tournament_id):
+        self.round_table.update(
+            {'matches': matches},
+            doc_ids=[round_id]
+        )
+        self.tournament_table.update(
+            {'current_round': round_id},
+            doc_ids=[tournament_id]
+        )
+
     """
     Delete Methods
     """
@@ -99,9 +118,12 @@ class DatabaseManager:
 
     def list_matches(self, round_id):
         query = Query()
-        matches = self.match_table.all(query.round_id == round_id)
-        for match in matches:
-            print(match)
+        matches = self.match_table.search(query.round_id == round_id)
+        return matches
+
+    def list_all_matches(self, tournament_id):
+        all_matches = self.match_table.search(Query().tournament_id == tournament_id)
+        return all_matches
 
     def list_players(self):
         return self.player_table.all()
@@ -112,3 +134,9 @@ class DatabaseManager:
             player_ids = tournament.get('players', [])
             return player_ids
         return []
+
+    def get_player_chess_id(self, player_id):
+        player = self.player_table.get(doc_id=player_id)
+        if player:
+            return player['chess_id']
+        return "N/A"

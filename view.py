@@ -100,11 +100,12 @@ class View:
         print("Création des rounds 1 à 4 en cours...")
 
     def display_list_of_rounds(self, rounds_created):
+        self.clear_screen()
         if rounds_created is None:
             print("Aucun round trouvé ou liste vide")
             return
-        header_menu = Panel("Rounds disponibles pour ce tournoi",
-                            title="MENU TOURNOI ",
+        header_menu = Panel("Rounds créés avec succès",
+                            title="CHESS TOURNAMENT MANAGER ",
                             width=panel_width,
                             style="bold green")
         table = Table()
@@ -113,23 +114,15 @@ class View:
         for i in rounds_created:
             table.add_row(str(i.doc_id), i["status"])
 
-            help_menu = Panel(
-                "Etape suivante : démarrer le premier round",
-                title="AIDE",
-                style="bold green",
-                width=panel_width)
+        help_menu = Panel(
+            "Vous êtes prêt(e) à démarrer le premier round",
+            title="AIDE",
+            style="bold green",
+            width=panel_width)
 
-            console.print(header_menu, justify="center")
-            console.print(help_menu, justify="center")
-
-        def display_menu_tournament(self):
-            console.print("MENU TOURNOI", style="bold blue")
-            print("[1] Créer un tournoi")
-            print("[2] Lancer un tournoi")
-            print("[3] Reprendre un tournoi")
-            print("[4] Retour au menu principal")
-            tournament_menu_choice = int(input("Quel est votre choix :"))
-            return tournament_menu_choice
+        console.print(header_menu, justify="center")
+        console.print(table, justify="center")
+        console.print(help_menu, justify="center")
 
     def display_menu_report(self):
         console.print("MENU RAPPORT", style="bold blue")
@@ -144,42 +137,11 @@ class View:
     SHOW REPORTS
     """
 
-    @staticmethod
-    def display_all_players(players):
-        header_menu = Panel(
-            "Liste des joueurs disponibles pour participer au tournoi",
-            title="MENU DÉMARRER TOURNOI")
-
-        table = Table(title="", style="bold blue")
-        help_menu = Panel("Vous êtes prêt(e) à démarrer le tournoi",
-                          title="AIDE",
-                          border_style="green",
-                          width=panel_width,
-                          style="bold green")
-        # add columns
-        table.add_column("Player ID", style="cyan")
-        table.add_column("Nom & prénoms", style="blue")
-        table.add_column("Date de naissance", style="yellow")
-        table.add_column("Chess ID", style="magenta")
-        table.add_column("Score", style="green")
-        if players:
-            for player in players:
-                table.add_row(str(player.player_id),
-                              str(player.first_name) + " " + str(player.last_name),
-                              str(player.birthdate), str(player.chess_id),
-                              str(player.score))
-            console.print(table)
-        else:
-            print("Aucun joueur disponible")
-
-        #  Display the results
-        console.print(header_menu, justify="center")
-        console.print(table, justify="center")
-        console.print(help_menu, justify="center")
-
-    def display_all_first_round_matches(self, matches):
-        header_menu = Panel("Liste des matchs du premier round",
-                            title="MENU DÉMARRER TOURNOI")
+    def display_matches(self, round_id, matches):
+        self.clear_screen()
+        header_menu = Panel(f"Liste des matchs du Round {round_id}",
+                            title="MENU DÉMARRER TOURNOI",
+                            width=panel_width)
 
         table = Table(title="", style="bold blue")
         help_menu = Panel("Vous êtes prêt(e) à démarrer le tournoi",
@@ -189,21 +151,25 @@ class View:
                           style="bold green")
         # add columns
         table.add_column("Match ID", style="cyan")
+        table.add_column("Chess ID P1", style="blue")
         table.add_column("Joueur 1", style="blue")
+        table.add_column("VS")
+        table.add_column("Chess ID P2", style="yellow")
         table.add_column("Joueur 2", style="yellow")
-        table.add_column("Score", style="magenta")
 
         if matches:
             for match in matches:
                 table.add_row(
                     str(match['match_id']),
+                    str(match['player1_chess_id']),
                     str(match['player1_name']),
-                    str(match['player2_name']),
-                    str(match.get('score', 'N/A')),
+                    str("VS"),
+                    str(match['player2_chess_id']),
+                    str(match['player2_name'])
                 )
 
-        console.print(table, justify="center")
         console.print(header_menu, justify="center")
+        console.print(table, justify="center")
         console.print(help_menu, justify="center")
 
     """
@@ -228,19 +194,20 @@ class View:
         console.print(user_choice, justify="center")
         return int(user_input)
 
-    def ask_start_first_round(self):
-        header_menu = Panel("Commencer le Round 1",
-                            title="MENU DÉMARRER UN TOURNOI",
+    def ask_start_next_round(self, tournament_id, round_id):
+        self.clear_screen()
+        header_menu = Panel(f"Prêt pour le ROUND {round_id}",
+                            title="MENU DÉMARRER UN ROUND",
                             width=panel_width,
                             style="bold blue")
 
         option_menu = Panel(
-            "\n1. Commencer le Round 1"
+            f"\n1. Commencer le Round {round_id}"
             "\n2. Retour au menu principal",
             width=panel_width,
             style="bold blue")
 
-        help_menu = Panel("Démarrage du premier round",
+        help_menu = Panel(f"Tournoi {tournament_id} en cours. Démarrez le round {round_id} maintenant",
                           title="AIDE",
                           border_style="green",
                           width=panel_width,
@@ -253,13 +220,72 @@ class View:
         user_choice = int(input("Quel est votre choix :"))
         return user_choice
 
+    def ask_match_result(self, match, round_id):
+        self.clear_screen()
+        header_menu = Panel(f"Résultat du match en cours, ROUND [{round_id} / 4]",
+                            title=f"{match['player1_name']} VS {match['player2_name']}",
+                            width=panel_width,
+                            style="bold blue"
+                            )
+        option_menu = Panel(
+            f"\n1. Victoire du joueur 1 : {match['player1_name']}"
+            f"\n2. Victoire du joueur 2 : {match['player2_name']}"
+            "\n3. Match Nul",
+            width=panel_width,
+        )
+
+        help_menu = Panel("Renseignez les résultats du match",
+                          title="AIDE",
+                          border_style="green",
+                          width=panel_width,
+                          style="bold green")
+
+        console.print(header_menu, justify="center")
+        console.print(option_menu, justify="center")
+        console.print(help_menu, justify="center")
+
+        choice = int(input("Choisissez une option (1, 2, ou 3) : "))
+        return choice
+
+    def display_message_round_finished(self, round_number):
+        print(f"Round {round_number} terminé !")
+
+    def display_tournament_stats(self, players):
+        header_menu = Panel(
+            "Classement et Statistiques",
+            title="CHESS TOURNAMENT MANAGER",
+            style="bold blue",
+            width=panel_width
+        )
+        table = Table(width=panel_width)
+        table.add_column("Position", style="bold magenta")
+        table.add_column("Chess ID", style="bold magenta")
+        table.add_column("Nom", style="bold magenta")
+        table.add_column("Score", style="bold magenta")
+        for index, player in enumerate(players, start=1):
+            table.add_row(str(index),
+                          f"{player['chess_id']}",
+                          f"{player['first_name']} {player['last_name']}",
+                          str(player['score'])
+                          )
+
+        help_menu = Panel("Scores actuels des joueurs dans le tournoi",
+                          title="AIDE",
+                          border_style="green",
+                          width=panel_width,
+                          style="bold green")
+
+        console.print(header_menu, justify="center")
+        console.print(table, justify="center")
+        console.print(help_menu, justify="center")
+
     def get_player_infos(self):
-        header_menu = Panel("Veuillez fournir les informations du joueur",
-                            title="MENU CRÉATION JOUEURS",
+        header_menu = Panel("Création de joueurs",
+                            title="CHESS TOURNAMENT MANAGER",
                             width=panel_width,
                             style="bold blue")
 
-        help_menu = Panel("Ces joueurs vont participer au tournoi",
+        help_menu = Panel("Veuillez fournir les informations du joueur",
                           title="AIDE",
                           border_style="green",
                           width=panel_width,
@@ -308,8 +334,8 @@ class View:
             "%d/%m/%Y"), chess_id
 
     def get_tournament_infos(self):
-        header_menu = Panel("Informations du tournoi",
-                            title="CRÉATION D'UN TOURNOI ",
+        header_menu = Panel("Création d'un tournoi",
+                            title="CHESS TOURNAMENT MANAGER ",
                             width=panel_width,
                             style="bold green")
 
@@ -334,7 +360,7 @@ class View:
         console.print(table, justify="center")
         console.print(help_menu, justify="center")
 
-        # ask informations about the tournament
+        # ask information about the tournament
         name = input("Nom du tournoi : ")
         location = input("Lieu du tournoi : ")
         start_date = None
@@ -445,7 +471,6 @@ class View:
             border_style="red",
             width=panel_width,
             style="bold red")
-
     def display_not_suffisant_players(self):
         help_menu = Panel(
             "Nombre de joueurs insuffisant, créez des joueurs pour commencer ",
@@ -472,7 +497,7 @@ class View:
                             width=panel_width,
                             style="bold green")
 
-        table = Table(title="Liste des tournois")
+        table = Table(title="Liste des tournois", width=panel_width)
         table.add_column("ID", style="bold magenta")
         table.add_column("Nom", style="bold magenta")
         table.add_column("Lieu", style="bold magenta")

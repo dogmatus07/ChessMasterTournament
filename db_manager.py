@@ -1,5 +1,4 @@
 from tinydb import TinyDB, Query
-from models import Tournament, Round, Match, Player
 
 
 class DatabaseManager:
@@ -115,14 +114,14 @@ class DatabaseManager:
         rounds = self.round_table.search(query.tournament_id == tournament_id)
         return rounds
 
-
     def list_matches(self, round_id):
         query = Query()
         matches = self.match_table.search(query.round_id == round_id)
         return matches
 
     def list_all_matches(self, tournament_id):
-        all_matches = self.match_table.search(Query().tournament_id == tournament_id)
+        all_matches = self.match_table.search(
+            Query().tournament_id == tournament_id)
         return all_matches
 
     def list_players(self):

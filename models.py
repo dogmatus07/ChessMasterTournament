@@ -57,14 +57,14 @@ class Tournament:
             "description": self.description,
             "rounds": self.round_ids,
             "matches": self.match_ids,
-            "players": self.player_ids
+            "players": self.player_ids,
+            "status": self.status.name
         }
 
     @classmethod
     def deserialize(cls, data):
         start_date = datetime.strptime(data['start_date'], "%d/%m/%Y")
         end_date = datetime.strptime(data['end_date'], "%d/%m/%Y")
-        tournament_id = data.doc_id
         return cls(data["name"],
                    data["location"],
                    start_date,
@@ -94,10 +94,12 @@ class Round:
                  tournament_id,
                  match_ids=None,
                  player_ids=None,
+                 matches=[],
                  status=RoundStatus.PENDING,
-                 round_id=None):
-        self.round_id = round_id
+                 doc_id=None):
+        self.doc_id = doc_id
         self.tournament_id = tournament_id
+        self.matches = []  # list of matches of current round
         self.match_ids = []  # will contain match ids for the round
         self.player_ids = []  # will contain player_ids who play for that round
         self.status = RoundStatus.PENDING  # initial state of the round
@@ -109,30 +111,31 @@ class Round:
         self.status = RoundStatus.FINISHED
 
     def __str__(self):
-        return (f"round_id : {self.round_id}\n"
+        return (f"round_id : {self.doc_id}\n"
                 f"tournament_id : {self.tournament_id}\n"
                 f"match_ids : {self.match_ids}\n"
                 f"player_ids : {self.player_ids}\n"
+                f"matches : {self.matches}\n"
                 f"status : {self.status.name}\n")
 
     def serialize(self):
         return {
-            "round_id": self.round_id,
             "tournament_id": self.tournament_id,
             "match_ids": self.match_ids,
             "player_ids": self.player_ids,
+            "matches": self.matches,
             "status": self.status.name
         }
 
     @classmethod
     def deserialize(cls, data):
-        round_id = data.doc_id
         status = RoundStatus[data["status"]]
         return cls(tournament_id=data['tournament_id'],
                    match_ids=data.get('match_ids', []),
                    player_ids=data.get('player_ids', []),
-                   status=status,
-                   round_id=round_id)
+                   matches=data.get('matches', []),
+                   status=status
+                   )
 
 
 class Match:
@@ -145,12 +148,14 @@ class Match:
                  player1_id,
                  player2_id,
                  winner=None,
-                 match_id=None):
+                 match_id=None,
+                 score=None):
         self.match_id = match_id
         self.round_id = round_id
         self.player1_id = player1_id
         self.player2_id = player2_id
         self.winner = None
+        self.score = None
 
     def __str__(self):
         return (f"round_id : {self.round_id}\n"

@@ -1,5 +1,6 @@
 import random
 import time
+from datetime import datetime
 
 from db_manager import DatabaseManager
 from models import (
@@ -38,8 +39,13 @@ class Controller:
             if action:
                 action()
             else:
+                self.view.clear_screen()
                 self.view.display_error_message()
+                self.view.press_any_key_to_continue()
+                self.back_to_main_menu()
+
         except ValueError:
+            self.view.clear_screen()
             self.view.display_error_message()
 
     def create_tournament(self):
@@ -102,7 +108,10 @@ class Controller:
         # check if tournament exist and players are 8
         tournament = self.db_manager.get_tournament(tournament_id)
         if not tournament or len(tournament['players']) < 8:
+            self.view.clear_screen()
             self.view.display_error_message()
+            self.view.press_any_key_to_continue()
+            self.back_to_main_menu()
             return
 
         # create all rounds for the tournament
@@ -116,18 +125,20 @@ class Controller:
             if round_number == round_list[0]:
                 self.prepare_and_start_first_round(tournament_id)
             else:
-                if self.view.ask_start_next_round(tournament_id, round_number):
-                    self.prepare_next_round(tournament_id, round_number)
-                    self.db_manager.update_round(
-                        round_number,
-                        {'status': RoundStatus.FINISHED.name})
-                else:
-                    break
+                # if self.view.ask_start_next_round(tournament_id, round_number):
+                start_date = self.round_start_date(round_number)
+                end_date = self.round_end_date(round_number)
+                self.db_manager.update_round(round_number, {'start_date': start_date})
+                self.prepare_next_round(tournament_id, round_number)
+                self.round_end_date(round_number)
+                self.db_manager.update_round(
+                    round_number,
+                    {'status': RoundStatus.FINISHED.name, 'end_date': end_date})
 
     def prepare_next_round(self, tournament_id, round_number):
         sorted_players = self.get_sorted_players_by_scores(tournament_id)
-        self.view.display_tournament_stats(sorted_players)
-        self.view.press_any_key_to_continue()
+        # self.view.display_tournament_stats(sorted_players)
+        # self.view.press_any_key_to_continue()
         pairings = self.generate_pairings(
             sorted_players,
             tournament_id,
@@ -224,6 +235,7 @@ class Controller:
             round_number,
             matches_infos,
             tournament_id)
+
         self.db_manager.update_round(round_number,
                                      {'status': RoundStatus.IN_PROGRESS.name})
         return matches_infos
@@ -254,7 +266,8 @@ class Controller:
             match = Match(
                 round_id=1,
                 player1_id=player1_id,
-                player2_id=player2_id)
+                player2_id=player2_id,
+                winner=None)
             match_id = self.db_manager.add_match(
                 match.serialize())
             match.match_id = match_id
@@ -263,12 +276,14 @@ class Controller:
             self.db_manager.update_match(match_id, match.serialize())
 
             # match info to display
+            start_date = self.round_start_date(round_id=1)
             match_info = {
                 'match_id': match_id,
                 'player1_id': player1_id,
                 'player2_id': player2_id,
                 'player1_name': player1_name,
                 'player2_name': player2_name,
+                'winner': None
             }
             matches.append(match_info)
 
@@ -280,6 +295,7 @@ class Controller:
 
         # update round status
         round_id = 1
+        self.round_start_date(round_id)
         self.db_manager.update_round(
             round_id,
             {'matches': matches, 'status': RoundStatus.IN_PROGRESS.name})
@@ -293,6 +309,7 @@ class Controller:
         self.display_tournament_stats(tournament_id)
 
         # update round status after all matches are done
+        self.round_end_date(round_id)
         self.db_manager.update_round(
             round_id,
             {'status': RoundStatus.FINISHED.name}
@@ -311,11 +328,14 @@ class Controller:
                 winner_id = None
             else:
                 self.back_to_main_menu()
+
             match['winner'] = winner_id
+
             self.update_player_scores(
                 match['player1_id'],
                 match['player2_id'],
                 winner_id)
+
             self.db_manager.update_match_winner(
                 match['match_id'],
                 winner_id
@@ -387,8 +407,10 @@ class Controller:
             if action:
                 action()
             else:
+                self.view.clear_screen()
                 self.view.display_error_message()
-                time.sleep(0.5)
+                self.view.press_any_key_to_continue()
+                self.back_to_main_menu()
                 break
 
     def display_rounds_status(self):
@@ -403,32 +425,65 @@ class Controller:
         self.view.press_any_key_to_continue()
         return all_rounds
 
+    def choose_round_to_resume(self):
+        self.view.clear_screen()
+        tournaments = self.db_manager.list_tournaments()
+        self.view.display_tournament_list(tournaments)
+
+        # ask user to choose tournament
+        tournament_id = self.view.ask_id()
+        all_rounds = self.db_manager.list_rounds(tournament_id)
+        self.view.show_rounds_status(all_rounds)
+        return all_rounds
+
     def resume_round(self):
         self.view.clear_screen()
+        # get current tournament
+        current_tournament = self.get_current_tournament()
+        if current_tournament:
+            tournament_id = current_tournament['tournament_id']
+            all_rounds = self.db_manager.list_rounds(tournament_id)
 
-        # display rounds
-        self.display_rounds_status()  # display all rounds and status and return document
-        round_id = self.view.ask_id()  # choose round id to resume
-        selected_round = self.db_manager.get_round(round_id)
-
-        if selected_round == 1:
-            if selected_round['status'] == "PENDING":
-                self.view.message_start_round()
-                self.prepare_and_start_first_round(tournament_id=selected_round['tournamend_id'])
-
-        if selected_round['status'] == "PENDING":
-            self.view.message_start_round()
-            self.prepare_next_round(tournament_id=selected_round['tournament_id'], round_number=round_id)
-        elif selected_round['status'] == "IN_PROGRESS":
-            self.view.message_resume_round()
-            self.resume_round_matches(tournament_id=selected_round['tournament_id'], round_id=round_id)
+            if all(round_item['status'] == "FINISHED" for round_item in all_rounds):
+                self.view.message_tournament_finished()
+                self.view.press_any_key_to_continue()
+                self.back_to_main_menu()
+            else:
+                self.continue_round()
         else:
-            self.view.message_round_finished()
+            self.view.message_no_active_tournament()
             self.view.press_any_key_to_continue()
             self.back_to_main_menu()
 
-        self.view.press_any_key_to_continue()
-        self.back_to_main_menu()
+    def continue_round(self):
+        # display rounds
+        self.choose_round_to_resume()  # display all rounds and status
+        round_id = self.view.ask_id()  # choose round id to resume
+
+        selected_round = self.db_manager.get_round(round_id)
+
+        if selected_round:
+            if selected_round == 1:
+                if selected_round['status'] == "PENDING":
+                    self.view.message_start_round()
+                    time.sleep(1)
+                    self.prepare_and_start_first_round(tournament_id=selected_round['tournamend_id'])
+
+            if selected_round['status'] == "PENDING":
+                self.view.message_start_round()
+                time.sleep(1)
+                self.prepare_next_round(tournament_id=selected_round['tournament_id'], round_number=round_id)
+            elif selected_round['status'] == "IN_PROGRESS":
+                self.view.clear_screen()
+                self.view.message_resume_round()
+                time.sleep(1)
+                self.resume_round_matches(tournament_id=selected_round['tournament_id'], round_id=round_id)
+            else:
+                self.view.message_round_finished()
+                self.view.press_any_key_to_continue()
+        else:
+            self.view.display_error_message()
+            self.view.press_any_key_to_continue()
 
     def resume_round_matches(self, tournament_id, round_id):
         round_info = self.db_manager.get_round(round_id)
@@ -497,9 +552,6 @@ class Controller:
             return round['status']
         return None
 
-    def prepare_round(self, tournament_id, round_number):
-        pass
-
     def create_rounds(self, tournament_id):
         # check if tournament exist
         tournament = self.db_manager.get_tournament(tournament_id)
@@ -536,46 +588,6 @@ class Controller:
         rounds_created = self.db_manager.list_rounds(tournament_id)
         self.view.display_list_of_rounds(rounds_created)
 
-    """
-    def start_rounds(self, tournament_id):
-        # get all registered players for the tournament
-        tournament = self.db_manager.get_tournament(tournament_id)
-        player_ids = tournament.get('players', [])
-
-        # random shuffle players for first round
-        random.shuffle(player_ids)
-
-        # get list of matches for this round
-        matches = [(player_ids[i], player_ids[i + 1])
-                   for i in range(0, len(player_ids), 2)]
-
-        # create matches
-        match_ids = []
-
-        for player1_id, player2_id in matches:
-            match = Match(round_id=1, player1_id=player1_id,
-                          player2_id=player2_id).serialize()
-
-            match_id = self.db_manager.add_match(match)
-            match_ids.append(match_id)
-
-        # update the first round with the matches
-
-        round_data = {
-            'tournament_id': tournament_id,
-            'matche_ids': match_ids,
-            'player_ids': player_ids,
-            'status': RoundStatus.IN_PROGRESS
-        }
-
-        # update db
-        self.db_manager.update_round(1, round_data)
-        self.db_manager.update_tournament(tournament_id, {
-            'current_round_id': 1,
-            'status': TournamentStatus.IN_PROGRESS
-        })
-    """
-
     def manage_players(self):
         self.view.clear_screen()
         player_menu_actions = {
@@ -594,8 +606,8 @@ class Controller:
             if action:
                 action()
             else:
+                self.view.clear_screen()
                 self.view.display_error_message()
-                time.sleep(0.5)
                 break
 
     def back_to_main_menu(self):
@@ -603,7 +615,27 @@ class Controller:
         self.main_loop()
 
     def show_reports(self):
-        pass
+        # to be defined -> Views : app_menu_reports and methods
+        self.view.clear_screen()
+        reports_menu_action = {
+            1: self.register_player,
+            2: self.list_players,
+            3: self.delete_player,
+            4: self.update_player,
+            5: self.back_to_main_menu
+        }
+
+        while True:
+            self.view.clear_screen()
+            self.view.app_menu_reports()
+            reports_menu_choice = int(self.view.ask_menu_choice())
+            action = reports_menu_action.get(reports_menu_choice)
+            if action:
+                action()
+            else:
+                self.view.clear_screen()
+                self.view.display_error_message()
+                break
 
     def exit_app(self):
         self.view.clear_screen()
@@ -703,11 +735,31 @@ class Controller:
     ROUND MANAGEMENT
     """
 
-    def end_round(self, round_id):
-        self.db_manager.update_round(
-            round_id,
-            {'status': RoundStatus.FINISHED.name}
-        )
+    def round_start_date(self, round_id):
+        # get current round
+        current_round = self.db_manager.get_round(round_id)
+        start_date = None
+        if current_round is not None:
+            string_start_date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            start_date = string_start_date
+            self.db_manager.update_round(round_id, {'start_date': start_date})
+        else:
+            self.view.message_round_not_found()
+
+        return start_date
+
+    def round_end_date(self, round_id):
+        # get current round
+        end_date = None
+        current_round = self.db_manager.get_round(round_id)
+        if current_round is not None:
+            string_end_date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            end_date = string_end_date
+            self.db_manager.update_round(round_id, {'end_date': end_date})
+        else:
+            self.view.message_round_not_found()
+
+        return end_date
 
     """
     PLAYER MANAGEMENT

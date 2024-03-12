@@ -76,6 +76,22 @@ class DatabaseManager:
     def update_match_winner(self, match_id, winner_id):
         self.match_table.update({'winner': winner_id}, doc_ids=[match_id])
 
+        # update matches in round table
+        udpated_match = self.match_table.get(doc_id=match_id)
+        round_id = udpated_match['round_id']
+
+        round_item = self.round_table.get(doc_id=round_id)
+        updated_matches = []
+
+        for match in round_item['matches']:
+            if match['match_id'] == match_id:
+                match['winner'] = winner_id
+            updated_matches.append(match)
+
+        # save to database
+        self.round_table.update({'matches': updated_matches}, doc_ids=[round_id])
+
+
     def update_round_matches(self, round_id, matches, tournament_id):
         self.round_table.update(
             {'matches': matches},

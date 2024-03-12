@@ -131,8 +131,10 @@ class View:
         table = Table()
         table.add_column("Round ID", style="bold magenta")
         table.add_column("Status", style="bold magenta")
+        table.add_column("Start date", style="bold yellow")
+        table.add_column("End date", style="bold yellow")
         for i in rounds_created:
-            table.add_row(str(i.doc_id), i["status"])
+            table.add_row(str(i.doc_id), i["status"], i['start_date'], i['end_date'])
 
         help_menu = Panel(
             "Liste des rounds et leurs status actuellement",
@@ -155,11 +157,17 @@ class View:
                             style="bold green")
         table = Table()
         table.add_column("Round ID", style="bold magenta")
-        table.add_column("Status", style="bold magenta")
+        table.add_column("Start date", style="bold yellow")
+        table.add_column("End date", style="bold yellow")
+        table.add_column("Status", style="bold green")
+        table.add_column("Matches", style="bold green")
         for i in rounds_created:
             table.add_row(
                 str(i.doc_id),
-                i["status"]
+                i["start_date"],
+                i['end_date'],
+                i["status"],
+                str(len(i['matches']))
             )
 
         help_menu = Panel(
@@ -302,7 +310,8 @@ class View:
     def ask_match_result(self, match, round_id):
         self.clear_screen()
         header_menu = Panel(
-            f"Résultat du match en cours, ROUND [{round_id} / 4]",
+            f"Résultat du match en cours",
+            subtitle=f"Match numéro {match['match_id']} du TOURNOI / ROUND [{round_id} / 4]",
             title=f"{match['player1_name']} VS {match['player2_name']}",
             width=panel_width,
             style="bold blue"
@@ -555,7 +564,7 @@ class View:
 
     def display_error_message(self):
         help_menu = Panel(
-            "Erreur, veuillez réessayer ou revenir au menu principal ",
+            "Erreur, veuillez réessayer ou revenir au menu principal en appuyant sur entrée",
             title="ERREUR",
             border_style="red",
             width=panel_width,
@@ -669,6 +678,7 @@ class View:
             return None
 
     def display_player_list(self, players):
+        self.clear_screen()
         header_menu = Panel("Joueurs disponibles",
                             title="MENU JOUEURS",
                             width=panel_width,
@@ -692,6 +702,7 @@ class View:
         console.print(table, justify="center")
 
     def message_round_not_found(self):
+        self.clear_screen()
         alert_message = Panel("Round non trouvé",
                           title="MESSAGE",
                           border_style="red",
@@ -701,6 +712,7 @@ class View:
         console.print(alert_message, justify="center")
 
     def message_all_matches_done(self):
+        self.clear_screen()
         alert_message = Panel("Tous les matches de ce round sont terminés",
                               title="MESSAGE",
                               border_style="cyan",
@@ -708,17 +720,19 @@ class View:
                               style="bold cyan")
 
         console.print(alert_message, justify="center")
-
+        self.press_any_key_to_continue()
     def message_round_finished(self):
-        alert_message = Panel("Round terminé avec succès",
+        self.clear_screen()
+        alert_message = Panel("ROUND terminé avec succès",
                               title="MESSAGE",
                               border_style="green",
                               width=panel_width,
                               style="bold green")
 
         console.print(alert_message, justify="center")
-
+        self.press_any_key_to_continue()
     def message_matches_left(self):
+        self.clear_screen()
         alert_message = Panel("Il reste des matches non terminés",
                               title="MESSAGE",
                               border_style="red",
@@ -726,8 +740,9 @@ class View:
                               style="bold red")
 
         console.print(alert_message, justify="center")
-
+        self.press_any_key_to_continue()
     def message_max_round_number(self):
+        self.clear_screen()
         alert_message = Panel("Nombre de rounds maximum atteint",
                               title="MESSAGE",
                               border_style="red",
@@ -735,8 +750,10 @@ class View:
                               style="bold red")
 
         console.print(alert_message, justify="center")
+        self.press_any_key_to_continue()
 
     def message_tournament_not_found(self):
+        self.clear_screen()
         alert_message = Panel("Tournoi non trouvé",
                               title="MESSAGE",
                               border_style="red",
@@ -744,8 +761,10 @@ class View:
                               style="bold red")
 
         console.print(alert_message, justify="center")
+        self.press_any_key_to_continue()
 
     def message_player_already_in_list(self):
+        self.clear_screen()
         alert_message = Panel("Le joueur est déjà inscrit dans le tournoi.",
                               title="MESSAGE",
                               border_style="red",
@@ -753,8 +772,10 @@ class View:
                               style="bold red")
 
         console.print(alert_message, justify="center")
+        self.press_any_key_to_continue()
 
     def message_player_pairing(self):
+        self.clear_screen()
         alert_message = Panel("Appariement des joueurs pour le round...",
                               title="MESSAGE",
                               border_style="green",
@@ -773,7 +794,7 @@ class View:
         console.print(alert_message, justify="center")
 
     def message_resume_round(self):
-        alert_message = Panel("Reprendre le round...",
+        alert_message = Panel("Préparation du ROUND à reprendre...",
                               title="MESSAGE",
                               border_style="green",
                               width=panel_width,
@@ -791,6 +812,7 @@ class View:
         console.print(alert_message, justify="center")
 
     def message_tournament_finished(self):
+        self.clear_screen()
         alert_message = Panel("Le tournoi est terminé.",
                               title="MESSAGE",
                               border_style="green",
@@ -799,4 +821,13 @@ class View:
 
         console.print(alert_message, justify="center")
 
+    def message_no_active_tournament(self):
+        alert_message = Panel("Aucun tournoi ACTIF à reprendre.",
+                              subtitle="Tous les rounds sont terminés",
+                              title="MESSAGE",
+                              border_style="green",
+                              width=panel_width,
+                              style="bold green")
+
+        console.print(alert_message, justify="center")
 

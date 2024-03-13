@@ -618,10 +618,10 @@ class Controller:
         # to be defined -> Views : app_menu_reports and methods
         self.view.clear_screen()
         reports_menu_action = {
-            1: self.register_player,
-            2: self.list_players,
-            3: self.delete_player,
-            4: self.update_player,
+            1: self.players_reporting,
+            2: self.tournaments_reporting,
+            3: self.participants_reporting,
+            4: self.rounds_matches_reporting,
             5: self.back_to_main_menu
         }
 
@@ -636,6 +636,64 @@ class Controller:
                 self.view.clear_screen()
                 self.view.display_error_message()
                 break
+
+    def players_reporting(self):
+        # get all players in database
+        all_players = self.db_manager.list_players()
+
+        # sort alphabeticaly
+        sorted_all_players = sorted(
+            all_players,
+            key=lambda x: (x['first_name'], x['last_name'])
+        )
+
+        # display all players
+        self.view.display_player_list(sorted_all_players)
+        self.view.press_any_key_to_continue()
+        self.back_to_main_menu()
+
+
+    def tournaments_reporting(self):
+        # get all tournaments
+        all_tournaments = self.db_manager.list_tournaments()
+
+        # show tournaments
+        self.view.display_tournament_list(all_tournaments)
+        self.view.press_any_key_to_continue()
+        self.back_to_main_menu()
+
+    def participants_reporting(self):
+        # get all players
+        players = self.db_manager.list_players()
+
+        # get current tournament
+        current_tournament = self.get_current_tournament()
+        if current_tournament:
+            tournament_id = current_tournament['tournament_id']
+
+            # ask tournament id from user
+            tournaments = self.db_manager.list_tournaments()
+            self.view.display_tournament_list(tournaments)
+            tournament_id_choice = self.view.ask_id()
+
+            if tournament_id_choice == tournament_id:
+                participants = []
+                for player in players:
+                    player_tournament_id = player.get('tournament_id')
+                    if player_tournament_id == tournament_id:
+                        participants.append(player)
+
+                # If there are participants, display them
+                if participants:
+                    self.view.show_participants_list(participants)
+                    self.view.press_any_key_to_continue()
+                else:
+                    self.view.display_message("No participants found for the selected tournament.")
+        else:
+            self.view.display_message("No current tournament found.")
+
+    def rounds_matches_reporting(self):
+        pass
 
     def exit_app(self):
         self.view.clear_screen()

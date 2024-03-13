@@ -116,6 +116,30 @@ class View:
         console.print(round_menu_options, justify="center")
         console.print(help_menu, justify="center")
 
+    def app_menu_reports(self):
+        menu_rounds = Panel("Gérer les rounds",
+                            title="MENU ROUNDS",
+                            width=panel_width,
+                            style="bold blue")
+
+        round_menu_options = Panel(
+            "\n1. Joueurs"
+            "\n2. Tournois"
+            "\n3. Participants"
+            "\n4. Rounds et matches"
+            "\n5. Retour au menu principal",
+            width=panel_width)
+
+        help_menu = Panel("Rapports et statistiques, choisissez les données à afficher",
+                          title="AIDE",
+                          border_style="green",
+                          width=panel_width,
+                          style="bold green")
+        # display menus
+        console.print(menu_rounds, justify="center")
+        console.print(round_menu_options, justify="center")
+        console.print(help_menu, justify="center")
+
     def display_round_creation(self):
         print("Création des rounds 1 à 4 en cours...")
 
@@ -572,6 +596,9 @@ class View:
 
         console.print(help_menu, justify="center")
 
+    def display_message(self, message):
+        print(message)
+
     def display_not_suffisant_players(self):
         help_menu = Panel(
             "Nombre de joueurs insuffisant, créez des joueurs pour commencer ",
@@ -676,6 +703,78 @@ class View:
                 "Ex. : AB12345"
             )
             return None
+
+    def show_participants_list(self, players):
+        self.clear_screen()
+        header_menu = Panel("Liste et détails des participants",
+                            title="CHESS TOURNAMENT MANAGER",
+                            subtitle="Menu Rapports & Statistiques",
+                            width=panel_width,
+                            style="bold green")
+
+        table = Table(width=panel_width)
+        table.add_column("ID", style="bold magenta")
+        table.add_column("Nom & prénoms", style="bold magenta")
+        table.add_column("Genre", style="bold magenta")
+        table.add_column("Date de naissance", style="bold magenta")
+        table.add_column("Chess ID", style="bold magenta")
+        table.add_column("Score", style="bold green")
+        for player in players:
+            table.add_row(
+                str(player.doc_id),
+                player["first_name"] + " " + player["last_name"],
+                player["gender"],
+                datetime.strptime(player["birthday"],
+                                  "%d/%m/%Y").strftime("%d/%m/%Y"),
+                player["chess_id"],
+                str(player['score'])
+            )
+
+        help_menu = Panel("Informations à propos des participants",
+                          title="AIDE",
+                          border_style="green",
+                          width=panel_width,
+                          style="bold green")
+
+        console.print(header_menu, justify="center")
+        console.print(table, justify="center")
+        console.print(help_menu, justify="center")
+
+    def show_rounds_matches(self, players):
+        self.clear_screen()
+        header_menu = Panel("Liste des rounds et matches",
+                            title="CHESS TOURNAMENT MANAGER",
+                            subtitle="Menu Rapports & Statistiques",
+                            width=panel_width,
+                            style="bold green")
+
+        table = Table(width=panel_width)
+        table.add_column("ID", style="bold magenta")
+        table.add_column("Nom & prénoms", style="bold magenta")
+        table.add_column("Genre", style="bold magenta")
+        table.add_column("Date de naissance", style="bold magenta")
+        table.add_column("Chess ID", style="bold magenta")
+        table.add_column("Score", style="bold green")
+        for player in players:
+            table.add_row(
+                str(player.doc_id),
+                player["first_name"] + " " + player["last_name"],
+                player["gender"],
+                datetime.strptime(player["birthday"],
+                                  "%d/%m/%Y").strftime("%d/%m/%Y"),
+                player["chess_id"],
+                str(player['score'])
+            )
+
+        help_menu = Panel("Informations à propos des tours et des matches du tournoi",
+                          title="AIDE",
+                          border_style="green",
+                          width=panel_width,
+                          style="bold green")
+
+        console.print(header_menu, justify="center")
+        console.print(table, justify="center")
+        console.print(help_menu, justify="center")
 
     def display_player_list(self, players):
         self.clear_screen()

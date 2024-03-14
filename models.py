@@ -215,7 +215,8 @@ class Player:
                 f"gender : {self.gender}\n"
                 f"birthday : {self.birthday.strftime('%d/%m/%Y')}\n"
                 f"chess_id : {self.chess_id}\n"
-                f"score : {self.score}\n")
+                f"score : {self.score}\n"
+                )
 
     def serialize(self):
         return {

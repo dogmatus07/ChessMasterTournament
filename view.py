@@ -50,9 +50,9 @@ class View:
 
     def app_menu_rounds(self):
         menu_rounds = Panel("Gérer les rounds",
-                             title="MENU ROUNDS",
-                             width=panel_width,
-                             style="bold blue")
+                            title="MENU ROUNDS",
+                            width=panel_width,
+                            style="bold blue")
 
         rounds_options_menu = Panel(
             "\n1. Liste et état des rounds"
@@ -69,6 +69,7 @@ class View:
         console.print(menu_rounds, justify="center")
         console.print(rounds_options_menu, justify="center")
         console.print(help_menu, justify="center")
+
     def app_menu_players(self):
         menu_players = Panel("Gérer les joueurs",
                              title="MENU JOUEURS",
@@ -117,15 +118,15 @@ class View:
         console.print(help_menu, justify="center")
 
     def app_menu_reports(self):
-        menu_rounds = Panel("Gérer les rounds",
-                            title="MENU ROUNDS",
+        menu_rounds = Panel("Rapports et Statistiques",
+                            title="CHESS TOURNAMENT MANAGER",
                             width=panel_width,
                             style="bold blue")
 
         round_menu_options = Panel(
             "\n1. Joueurs"
             "\n2. Tournois"
-            "\n3. Participants"
+            "\n3. Participants & Classement"
             "\n4. Rounds et matches"
             "\n5. Retour au menu principal",
             width=panel_width)
@@ -214,6 +215,7 @@ class View:
         return menu_report_choice
 
     def show_player_data(self, player):
+        self.clear_screen()
         header_menu = Panel("Informations Joueur",
                             title="CHESS TOURNAMENT MANAGER ",
                             width=panel_width,
@@ -334,7 +336,7 @@ class View:
     def ask_match_result(self, match, round_id):
         self.clear_screen()
         header_menu = Panel(
-            f"Résultat du match en cours",
+            "Résultat du match en cours",
             subtitle=f"Match numéro {match['match_id']} du TOURNOI / ROUND [{round_id} / 4]",
             title=f"{match['player1_name']} VS {match['player2_name']}",
             width=panel_width,
@@ -509,6 +511,52 @@ class View:
         user_choice = input(":")
         return user_choice
 
+    def ask_player_infos_update(self):
+        updated_data = {}
+        choice_menu = Panel(
+            "\n1. Modifier le nom"
+            "\n2. Modifier le prénom"
+            "\n3. Modifier le genre"
+            "\n4. Modifier la date de naissance"
+            "\n5. Modifier le Chess ID"
+            "\n6. Terminer la mise à jour",
+            style="magenta",
+            width=panel_width
+        )
+        console.print(choice_menu, justify="center")
+
+        while True:
+            choice = int(input("Votre choix de 1 à 6 : "))
+
+            if choice == 1:
+                first_name = input("Nouveau nom du joueur : ").strip()
+                if first_name.strip():
+                    updated_data['first_name'] = first_name
+            elif choice == 2:
+                last_name = input("Nouveau prénom du joueur : ").strip()
+                if last_name.strip():
+                    updated_data['last_name'] = last_name
+            elif choice == 3:
+                gender = input("Nouveau Genre du joueur : ").strip().upper()
+                if gender in ["H", "F"]:
+                    updated_data['gender'] = gender
+                else:
+                    self.display_message("Erreur, veuillez saisir H pour homme ou F pour femme")
+            elif choice == 4:
+                birthday = input("Nouvelle date de naissance du joueur : ").strip()
+                if self.validate_date(birthday):
+                    updated_data['birthday'] = birthday
+            elif choice == 5:
+                chess_id = input("Nouveau Chess ID du joueur : ").strip()
+                if self.validate_chess_id(chess_id):
+                    updated_data['chess_id'] = chess_id
+            elif choice == 6:
+                break
+            else:
+                self.display_message("Choix invalide, veuillez entrer un choix entre 1 et 6")
+
+        return updated_data
+
     def ask_tournament_infos_update(self):
         updated_data = {}
         name = input("Nouveau nom du tournoi : ")
@@ -546,9 +594,9 @@ class View:
     def ask_confirmation_deletion(self):
         help_menu = Panel("Voulez-vous vraiment supprimer cet élément ?",
                           title="ACTION REQUISE",
-                          border_style="green",
+                          border_style="red",
                           width=panel_width,
-                          style="bold green")
+                          style="bold red")
 
         console.print(help_menu, justify="center")
         user_input = input("o/n : ")
@@ -557,6 +605,7 @@ class View:
     """
     USER EXPERIENCE
     """
+
     @staticmethod
     def clear_screen():
         if os.name == 'nt':
@@ -619,6 +668,7 @@ class View:
         console.print(help_menu, justify="center")
 
     def display_tournament_list(self, tournaments):
+        self.clear_screen()
         header_menu = Panel("Tournois disponibles en ce moment",
                             title="MENU TOURNOI ",
                             width=panel_width,
@@ -740,7 +790,7 @@ class View:
         console.print(table, justify="center")
         console.print(help_menu, justify="center")
 
-    def show_rounds_matches(self, players):
+    def show_rounds_matches(self, rounds):
         self.clear_screen()
         header_menu = Panel("Liste des rounds et matches",
                             title="CHESS TOURNAMENT MANAGER",
@@ -748,23 +798,38 @@ class View:
                             width=panel_width,
                             style="bold green")
 
-        table = Table(width=panel_width)
-        table.add_column("ID", style="bold magenta")
-        table.add_column("Nom & prénoms", style="bold magenta")
-        table.add_column("Genre", style="bold magenta")
-        table.add_column("Date de naissance", style="bold magenta")
-        table.add_column("Chess ID", style="bold magenta")
-        table.add_column("Score", style="bold green")
-        for player in players:
-            table.add_row(
-                str(player.doc_id),
-                player["first_name"] + " " + player["last_name"],
-                player["gender"],
-                datetime.strptime(player["birthday"],
-                                  "%d/%m/%Y").strftime("%d/%m/%Y"),
-                player["chess_id"],
-                str(player['score'])
-            )
+        console.print(header_menu, justify="center")
+
+        for round_data in rounds:
+            table = Table(title=f"Résultats des matches du Round {round_data.doc_id}", width=panel_width)
+            table.add_column("Match ID", style="dim")
+            table.add_column("Joueurs", style="bold magenta")
+            table.add_column("Score", style="bold green")
+
+            for match in round_data['matches']:
+                winner = match['winner']
+                player1_name = match['player1_name']
+                player1_id = match['player1_id']
+                player2_name = match['player2_name']
+                player2_id = match['player2_id']
+                match_id = match['match_id']
+
+                if winner == player1_id:
+                    score = "1 - 0"
+                elif winner == player2_id:
+                    score = "0 - 1"
+                elif winner is None:
+                    score = "Match Nul"
+                else:
+                    score = "Inconnu"
+
+                table.add_row(
+                    str(match_id),
+                    f"{player1_name} vs {player2_name}",
+                    score
+                )
+
+            console.print(table, justify="center")
 
         help_menu = Panel("Informations à propos des tours et des matches du tournoi",
                           title="AIDE",
@@ -772,8 +837,6 @@ class View:
                           width=panel_width,
                           style="bold green")
 
-        console.print(header_menu, justify="center")
-        console.print(table, justify="center")
         console.print(help_menu, justify="center")
 
     def display_player_list(self, players):
@@ -783,7 +846,7 @@ class View:
                             width=panel_width,
                             style="bold green")
 
-        table = Table(title="Liste des joueurs", width=panel_width)
+        table = Table(title=f"Liste des joueurs. Il y a {len(players)} joueurs en ce moment", width=panel_width)
         table.add_column("ID", style="bold magenta")
         table.add_column("Nom & prénoms", style="bold magenta")
         table.add_column("Genre", style="bold magenta")
@@ -803,10 +866,10 @@ class View:
     def message_round_not_found(self):
         self.clear_screen()
         alert_message = Panel("Round non trouvé",
-                          title="MESSAGE",
-                          border_style="red",
-                          width=panel_width,
-                          style="bold red")
+                              title="MESSAGE",
+                              border_style="red",
+                              width=panel_width,
+                              style="bold red")
 
         console.print(alert_message, justify="center")
 
@@ -820,6 +883,7 @@ class View:
 
         console.print(alert_message, justify="center")
         self.press_any_key_to_continue()
+
     def message_round_finished(self):
         self.clear_screen()
         alert_message = Panel("ROUND terminé avec succès",
@@ -830,6 +894,7 @@ class View:
 
         console.print(alert_message, justify="center")
         self.press_any_key_to_continue()
+
     def message_matches_left(self):
         self.clear_screen()
         alert_message = Panel("Il reste des matches non terminés",
@@ -840,6 +905,7 @@ class View:
 
         console.print(alert_message, justify="center")
         self.press_any_key_to_continue()
+
     def message_max_round_number(self):
         self.clear_screen()
         alert_message = Panel("Nombre de rounds maximum atteint",
@@ -929,4 +995,3 @@ class View:
                               style="bold green")
 
         console.print(alert_message, justify="center")
-

@@ -105,7 +105,7 @@ Cette configuration est définie dans le fichier .flake8
 
 Le rapport au format html est présent dans le dossier flake8_report
 
-Pour générer un nouveau rapport Flake8, effectuez la commande suivante dans le terminal : 
+Pour générer un nouveau rapport Flake8 au format HTML, effectuez la commande suivante dans le terminal : 
 
 *flake8 --format=html --htmldir=flake8_report .*
 

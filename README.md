@@ -4,9 +4,7 @@
 Ce programme, nommé  Chess Tournament Manager, a été conçu pour gérer un tournoi d'échecs. Langage : python, mode terminal. Le programme suit le modèle de conception MVC : Models - View- Controller.
 
 ## Base de données
-
-Les données sont stockées dans un fichier json générées à l'aide de TinyDB.
-Le fichier nommé db.json se trouve dans data/tournaments/db.json
+TinyDB : Les données sont stockées dans un fichier json nommé db.json qui se trouve dans data/tournaments/db.json
 
 ## Exigences
 

@@ -383,13 +383,6 @@ class Controller:
             if tournament['status'] == 'IN_PROGRESS':
                 return tournament
 
-    def get_current_round(self, tournament_id):
-        rounds = self.db_manager.list_rounds(tournament_id)
-        for round_item in rounds:
-            if round_item['status'] == 'IN_PROGRESS':
-                return round_item
-        return None
-
     def players_have_met(self, player1_id, player2_id, previous_matches):
         for match in previous_matches:
             players = [match['player1_id'], match['player2_id']]
@@ -550,12 +543,6 @@ class Controller:
         else:
             self.db_manager.update_tournament(tournament_id, {'status': TournamentStatus.FINISHED.name})
             self.view.message_tournament_finished()
-
-    def determine_round_status(self, round_number):
-        round = self.db_manager.get_round(round_number)
-        if round:
-            return round['status']
-        return None
 
     def create_rounds(self, tournament_id):
         # check if tournament exist
@@ -718,18 +705,6 @@ class Controller:
         self.view.clear_screen()
         exit()
 
-    """
-    SELECT TOURNAMENT TO VIEW DETAILS
-    """
-    """
-    self.view.clear_screen()
-    tournaments = self.db_manager.list_tournaments()
-    self.view.display_tournament_list(tournaments)
-    user_choice = self.view.ask_tournament_id()
-    self.view.clear_screen()
-    self.current_tournament = self.db_manager.get_tournament(user_choice)
-    self.view.display_tournament_details(self.current_tournament)
-    """
     """
     UPDATE TOURNAMENT
     """

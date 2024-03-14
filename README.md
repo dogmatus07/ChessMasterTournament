@@ -1,7 +1,11 @@
 # Programme de gestion de tournoi d'échecs 
 
 ## Description
-Ce programme, nommé  Chess Tournament Manager, a été conçu pour gérer un tournoi d'échecs. Langage : python, mode terminal. Le programme suit le modèle de conception MVC : Models - View- Controller.
+Ce programme, nommé  Chess Tournament Manager, a été conçu pour gérer un tournoi d'échecs.
+
++ Langage : Python
++ Mode terminal
++ Modèle de conception : MVC (Models - View- Controller)
 
 ## Base de données
 TinyDB : Les données sont stockées dans un fichier json nommé db.json qui se trouve dans data/tournaments/db.json
@@ -12,29 +16,31 @@ Les exigences pour lancer le programem se trouve dans le fichier requirements.tx
 
 Voici les détails : 
 
-flake8==7.0.0
-flake8-html==0.4.3
-Jinja2==3.1.3
-markdown-it-py==3.0.0
-MarkupSafe==2.1.5
-mccabe==0.7.0
-mdurl==0.1.2
-pycodestyle==2.11.1
-pyflakes==3.2.0
-Pygments==2.17.2
-python-dateutil==2.8.2
-rich==13.7.0
-six==1.16.0
-tinydb==4.8.0
++ flake8==7.0.0
++ flake8-html==0.4.3
++ Jinja2==3.1.3
++ markdown-it-py==3.0.0
++ MarkupSafe==2.1.5
++ mccabe==0.7.0
++ mdurl==0.1.2
++ pycodestyle==2.11.1
++ pyflakes==3.2.0
++ Pygments==2.17.2
++ python-dateutil==2.8.2
++ rich==13.7.0
++ six==1.16.0
++ tinydb==4.8.0
 
 ### Créez l'environement virtuel 
 
-Pour cela exécuter la commande suivante : python -m venv venv
+Pour cela exécuter la commande suivante : 
+
+*python -m venv venv*
 
 ### Activez l'environement virtuel
 #### Sous Windows.
 
-\venv\Scripts\activate
+*\venv\Scripts\activate*
 
 
 ### Installez les librairies requises
@@ -44,11 +50,17 @@ Ce script a été testé sur un **environnement Windows** à l'aide de PyCharm. 
 
 ## Utilisation
 
-Clonez le dépôt git :*git clone https://github.com/dogmatus07/ChessMasterTournament.git*
+Clonez le dépôt git :
 
-Accédez au répertoire du projet :*cd ChessMasterTournament*
+*git clone https://github.com/dogmatus07/ChessMasterTournament.git*
 
-Exécutez le script :*python main.py* pour lancer le programme.
+Accédez au répertoire du projet :
+
+*cd ChessMasterTournament*
+
+Exécutez le script pour lancer le programme :
+
+*python main.py*
 
 ## Fonctionnement
 
@@ -95,7 +107,7 @@ Le rapport au format html est présent dans le dossier flake8_report
 
 Pour générer un nouveau rapport Flake8, effectuez la commande suivante dans le terminal : 
 
-flake8 --format=html --htmldir=flake8_report .
+*flake8 --format=html --htmldir=flake8_report .*
 
 ## Clause de non-responsabilité
 Ce programme sera utilisé à des fins éducatives uniquement.

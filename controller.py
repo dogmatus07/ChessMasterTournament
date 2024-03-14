@@ -125,7 +125,6 @@ class Controller:
             if round_number == round_list[0]:
                 self.prepare_and_start_first_round(tournament_id)
             else:
-                # if self.view.ask_start_next_round(tournament_id, round_number):
                 start_date = self.round_start_date(round_number)
                 end_date = self.round_end_date(round_number)
                 self.db_manager.update_round(round_number, {'start_date': start_date})
@@ -135,10 +134,17 @@ class Controller:
                     round_number,
                     {'status': RoundStatus.FINISHED.name, 'end_date': end_date})
 
+        # if all rounds are finished, update tournament status
+        all_rounds_finished = all(
+            self.db_manager.get_round(round_id)['status'] == RoundStatus.FINISHED.name for round_id in round_list)
+        if all_rounds_finished:
+            self.db_manager.update_tournament(tournament_id, {'status': TournamentStatus.FINISHED.name})
+            self.view.message_tournament_finished()
+            self.view.press_any_key_to_continue()
+            self.back_to_main_menu()
+
     def prepare_next_round(self, tournament_id, round_number):
         sorted_players = self.get_sorted_players_by_scores(tournament_id)
-        # self.view.display_tournament_stats(sorted_players)
-        # self.view.press_any_key_to_continue()
         pairings = self.generate_pairings(
             sorted_players,
             tournament_id,
@@ -276,7 +282,7 @@ class Controller:
             self.db_manager.update_match(match_id, match.serialize())
 
             # match info to display
-            start_date = self.round_start_date(round_id=1)
+            self.round_start_date(round_id=1)
             match_info = {
                 'match_id': match_id,
                 'player1_id': player1_id,
@@ -410,7 +416,7 @@ class Controller:
                 self.view.clear_screen()
                 self.view.display_error_message()
                 self.view.press_any_key_to_continue()
-                self.back_to_main_menu()
+                self.manage_rounds()
                 break
 
     def display_rounds_status(self):
@@ -537,14 +543,13 @@ class Controller:
         total_rounds = len(rounds)
         current_round_index = rounds.index(current_round_id)
 
-        if current_round_index < total_rounds -1:
+        if current_round_index < total_rounds - 1:
             next_round_id = rounds[current_round_index + 1]
             self.view.message_prepare_next_round(next_round_id)
             self.prepare_next_round(tournament_id, next_round_id)
         else:
             self.db_manager.update_tournament(tournament_id, {'status': TournamentStatus.FINISHED.name})
             self.view.message_tournament_finished()
-
 
     def determine_round_status(self, round_number):
         round = self.db_manager.get_round(round_number)
@@ -608,6 +613,8 @@ class Controller:
             else:
                 self.view.clear_screen()
                 self.view.display_error_message()
+                self.view.press_any_key_to_continue()
+                self.manage_players()
                 break
 
     def back_to_main_menu(self):
@@ -650,8 +657,7 @@ class Controller:
         # display all players
         self.view.display_player_list(sorted_all_players)
         self.view.press_any_key_to_continue()
-        self.back_to_main_menu()
-
+        self.show_reports()
 
     def tournaments_reporting(self):
         # get all tournaments
@@ -660,40 +666,53 @@ class Controller:
         # show tournaments
         self.view.display_tournament_list(all_tournaments)
         self.view.press_any_key_to_continue()
-        self.back_to_main_menu()
+        self.show_reports()
 
     def participants_reporting(self):
         # get all players
         players = self.db_manager.list_players()
 
-        # get current tournament
-        current_tournament = self.get_current_tournament()
-        if current_tournament:
-            tournament_id = current_tournament['tournament_id']
+        # ask tournament id from user
+        tournaments = self.db_manager.list_tournaments()
+        self.view.display_tournament_list(tournaments)
+        tournament_id = self.view.ask_id()
 
-            # ask tournament id from user
-            tournaments = self.db_manager.list_tournaments()
-            self.view.display_tournament_list(tournaments)
-            tournament_id_choice = self.view.ask_id()
+        if tournament_id:
+            participants = []
+            for player in players:
+                player_tournament_id = player.get('tournament_id')
+                if player_tournament_id == tournament_id:
+                    participants.append(player)
 
-            if tournament_id_choice == tournament_id:
-                participants = []
-                for player in players:
-                    player_tournament_id = player.get('tournament_id')
-                    if player_tournament_id == tournament_id:
-                        participants.append(player)
+            # sort by score to determine champion
+            sorted_participants = sorted(
+                participants,
+                key=lambda x: (
+                    -x['score'],
+                    x['first_name'],
+                    x['last_name'])
+            )
 
-                # If there are participants, display them
-                if participants:
-                    self.view.show_participants_list(participants)
-                    self.view.press_any_key_to_continue()
-                else:
-                    self.view.display_message("No participants found for the selected tournament.")
+            # If there are participants, display them
+            if sorted_participants:
+                self.view.show_participants_list(sorted_participants)
+                self.view.press_any_key_to_continue()
+            else:
+                self.view.display_message("Ce tournoi n'a pas encore de participants.")
         else:
-            self.view.display_message("No current tournament found.")
+            self.view.display_message("il n'y a pas de tournoi actif en cours.")
 
     def rounds_matches_reporting(self):
-        pass
+        # get tournament_id
+        tournaments = self.db_manager.list_tournaments()
+        self.view.display_tournament_list(tournaments)
+        tournament_id = self.view.ask_id()
+
+        # get all rounds
+        rounds = self.db_manager.list_rounds(tournament_id)
+        self.view.show_rounds_matches(rounds)
+        self.view.press_any_key_to_continue()
+        self.show_reports()
 
     def exit_app(self):
         self.view.clear_screen()
@@ -735,6 +754,33 @@ class Controller:
     """
     TOURNAMENT MANAGEMENT
     """
+
+    def update_player(self):
+        all_players = self.db_manager.list_players()
+        if not all_players:
+            self.view.display_message("Aucun joueur à afficher.")
+            return
+
+        self.view.display_player_list(all_players)
+        player_id = self.view.ask_id()
+
+        player = self.db_manager.get_player(player_id)
+        if player:
+            self.view.show_player_data(player)
+            updated_data = self.view.ask_player_infos_update()
+
+            # update new player data inside database
+            self.db_manager.update_player(player_id, updated_data)
+
+            # show new player data
+            updated_player = self.db_manager.get_player(player_id)
+            self.view.show_player_data(updated_player)
+
+            self.view.display_message("Informations du joueur mises à jour avec succès.")
+        else:
+            self.view.display_message("Joueur non trouvé.")
+
+        self.view.press_any_key_to_continue()
 
     def update_tournament(self, tournament_id):
         tournament_id = int(tournament_id)
@@ -922,19 +968,39 @@ class Controller:
         else:
             self.view.message_player_already_in_list()
 
-    def update_player(self):
-        players = self.db_manager.list_players()
-        self.view.display_player_list(players)
-        player_id = self.view.ask_id()
-        player_to_update = self.db_manager.get_player(player_id)
-        self.view.show_player_data(player_to_update)
-        self.view.press_any_key_to_continue()
-
     def list_players(self):
         all_players = self.db_manager.list_players()
         self.view.clear_screen()
         self.view.display_player_list(all_players)
         self.view.press_any_key_to_continue()
 
-    def delete_player(self, player_id):
-        pass
+    def delete_player(self):
+        players = self.db_manager.list_players()
+
+        self.view.display_player_list(players)
+        player_to_delete = self.view.ask_id()
+        # check if player exist and show details about the player to delete
+
+        player_to_delete_id = self.db_manager.get_player(player_to_delete)
+        if not player_to_delete_id:
+            self.view.display_message("Joueur non trouvé")
+            self.view.press_any_key_to_continue()
+            return
+
+        self.view.show_player_data(player_to_delete_id)
+
+        while True:
+            user_input = self.view.ask_confirmation_deletion()
+            if user_input.lower() == "o":
+                self.db_manager.delete_player(player_to_delete)
+                self.view.display_message("Joueur supprimé avec succès, base de données mise à jour")
+                self.view.press_any_key_to_continue()
+                break
+            elif user_input.lower() == "n":
+                self.view.display_message("Opération annulée, aucun élément supprimé, retour au menu principal")
+                break
+            else:
+                self.view.display_message("Valeur incorrecte, veuillez choisir entre o et n")
+
+        self.view.press_any_key_to_continue()
+        self.back_to_main_menu()

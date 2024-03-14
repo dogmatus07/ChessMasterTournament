@@ -3,7 +3,7 @@ from tinydb import TinyDB, Query
 
 class DatabaseManager:
 
-    def __init__(self, path="db.json"):
+    def __init__(self, path="data/tournaments/db.json"):
         self.db = TinyDB(path)
         self.tournament_table = self.db.table("tournament")
         self.round_table = self.db.table("round")
@@ -90,7 +90,6 @@ class DatabaseManager:
 
         # save to database
         self.round_table.update({'matches': updated_matches}, doc_ids=[round_id])
-
 
     def update_round_matches(self, round_id, matches, tournament_id):
         self.round_table.update(

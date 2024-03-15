@@ -706,56 +706,8 @@ class Controller:
         exit()
 
     """
-    UPDATE TOURNAMENT
-    """
-    """
-    self.view.clear_screen()
-    tournaments = self.db_manager.list_tournaments()
-    self.view.display_tournament_list(tournaments)
-    user_choice = self.view.ask_tournament_id()
-    self.view.clear_screen()
-    self.update_tournament(user_choice)
-    """
-    """
-    DELETE TOURNAMENT
-    """
-    """
-    self.view.clear_screen()
-    tournament_list = self.db_manager.list_tournaments()
-    self.view.display_tournament_list(tournament_list)
-    tournament_id = self.view.ask_delete_tournament()
-    self.delete_tournament(tournament_id)
-    """
-    """
     TOURNAMENT MANAGEMENT
     """
-
-    def update_player(self):
-        all_players = self.db_manager.list_players()
-        if not all_players:
-            self.view.display_message("Aucun joueur à afficher.")
-            return
-
-        self.view.display_player_list(all_players)
-        player_id = self.view.ask_id()
-
-        player = self.db_manager.get_player(player_id)
-        if player:
-            self.view.show_player_data(player)
-            updated_data = self.view.ask_player_infos_update()
-
-            # update new player data inside database
-            self.db_manager.update_player(player_id, updated_data)
-
-            # show new player data
-            updated_player = self.db_manager.get_player(player_id)
-            self.view.show_player_data(updated_player)
-
-            self.view.display_message("Informations du joueur mises à jour avec succès.")
-        else:
-            self.view.display_message("Joueur non trouvé.")
-
-        self.view.press_any_key_to_continue()
 
     def update_tournament(self, tournament_id):
         tournament_id = int(tournament_id)
@@ -843,6 +795,33 @@ class Controller:
     """
     PLAYER MANAGEMENT
     """
+
+    def update_player(self):
+        all_players = self.db_manager.list_players()
+        if not all_players:
+            self.view.display_message("Aucun joueur à afficher.")
+            return
+
+        self.view.display_player_list(all_players)
+        player_id = self.view.ask_id()
+
+        player = self.db_manager.get_player(player_id)
+        if player:
+            self.view.show_player_data(player)
+            updated_data = self.view.ask_player_infos_update()
+
+            # update new player data inside database
+            self.db_manager.update_player(player_id, updated_data)
+
+            # show new player data
+            updated_player = self.db_manager.get_player(player_id)
+            self.view.show_player_data(updated_player)
+
+            self.view.display_message("Informations du joueur mises à jour avec succès.")
+        else:
+            self.view.display_message("Joueur non trouvé.")
+
+        self.view.press_any_key_to_continue()
 
     def register_player(self):
         self.view.clear_screen()

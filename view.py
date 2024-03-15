@@ -505,6 +505,19 @@ class View:
         user_choice = input(":")
         return int(user_choice)
 
+    def ask_player_to_delete(self):
+        console.print(
+            "\n1. Renseignez l'ID du joueur à supprimer",
+            "\n2. Retour au menu précédent"
+        )
+        while True:
+            user_choice = int(input(": "))
+            if user_choice not in [1, 2]:
+                print("Erreur. Veuillez choisir entre 1 et 2")
+            else:
+                break
+        return user_choice
+
     def ask_player_id(self):
         console.print("Veuillez choisir l'ID du joueur à inscrire au tournoi",
                       style="bold blue")

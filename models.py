@@ -237,4 +237,4 @@ class Player:
                    data['birthday'],
                    data['chess_id'],
                    data['score'],
-                   player_id=player_id)
+                   doc_id=data.doc_id)

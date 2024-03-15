@@ -953,7 +953,13 @@ class Controller:
         players = self.db_manager.list_players()
 
         self.view.display_player_list(players)
-        player_to_delete = self.view.ask_id()
+        menu_choice = self.view.ask_player_to_delete()
+        player_to_delete = 0
+        if menu_choice == 1:
+            player_to_delete = self.view.ask_id()
+        else:
+            self.manage_players()
+
         # check if player exist and show details about the player to delete
 
         player_to_delete_id = self.db_manager.get_player(player_to_delete)

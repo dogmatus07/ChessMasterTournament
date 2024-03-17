@@ -367,6 +367,7 @@ class View:
         print(f"Round {round_number} terminé !")
 
     def display_tournament_stats(self, players):
+        self.clear_screen()
         header_menu = Panel(
             "Classement et Statistiques",
             title="CHESS TOURNAMENT MANAGER",

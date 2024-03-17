@@ -12,7 +12,7 @@ TinyDB : Les données sont stockées dans un fichier json nommé db.json qui se 
 
 ## Exigences
 
-Les exigences pour lancer le programem se trouve dans le fichier requirements.txt. 
+Les exigences pour lancer le programme se trouve dans le fichier requirements.txt. 
 
 Voici les détails : 
 
@@ -40,8 +40,9 @@ Pour cela exécuter la commande suivante :
 ### Activez l'environement virtuel
 #### Sous Windows.
 
-*\venv\Scripts\activate*
+Naviguez vers le répertoire ChessMasterTournament puis:
 
+*.\\\venv\Scripts\activate*
 
 ### Installez les librairies requises
 Ce script a été testé sur un **environnement Windows** à l'aide de PyCharm.  Les prérequis sont fournis dans le fichier Requirements.txt.  Pour obtenir exactement le même environnement de production, vous devez exécuter la commande suivante :

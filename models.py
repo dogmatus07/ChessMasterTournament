@@ -230,7 +230,6 @@ class Player:
 
     @classmethod
     def deserialize(cls, data):
-        player_id = data.doc_id
         return cls(data['first_name'],
                    data['last_name'],
                    data['gender'],

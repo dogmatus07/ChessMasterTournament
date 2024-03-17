@@ -445,6 +445,7 @@ class Controller:
 
             if all(round_item['status'] == "FINISHED" for round_item in all_rounds):
                 self.view.message_tournament_finished()
+                self.db_manager.update_tournament(tournament_id, {'status': TournamentStatus.FINISHED.name})
                 self.view.press_any_key_to_continue()
                 self.back_to_main_menu()
             else:
@@ -461,12 +462,16 @@ class Controller:
 
         selected_round = self.db_manager.get_round(round_id)
 
+        if not selected_round:
+            self.view.display_error_message()
+            self.view.press_any_key_to_continue()
+            return
+
         if selected_round:
-            if selected_round == 1:
-                if selected_round['status'] == "PENDING":
-                    self.view.message_start_round()
-                    time.sleep(1)
-                    self.prepare_and_start_first_round(tournament_id=selected_round['tournamend_id'])
+            if selected_round.doc_id == 1 and selected_round['status'] == "PENDING":
+                self.view.message_start_round()
+                time.sleep(1)
+                self.prepare_and_start_first_round(tournament_id=selected_round['tournament_id'])
 
             if selected_round['status'] == "PENDING":
                 self.view.message_start_round()
@@ -490,40 +495,36 @@ class Controller:
             self.view.message_round_not_found()
             return
 
-        matches = self.db_manager.list_matches(round_id)
-        unfinished_matches = [match for match in matches if match['winner'] is None]
+        unfinished = True
+        while unfinished:
+            matches = self.db_manager.list_matches(round_id)
+            unfinished_matches = [match for match in matches if match['winner'] is None]
 
-        if not unfinished_matches:
-            self.view.message_all_matches_done()
-            self.db_manager.update_round(round_id, {'status': RoundStatus.FINISHED.name})
-            self.check_and_prepare_next_round(tournament_id, round_id)
-            return
+            if not unfinished_matches:
+                self.view.message_all_matches_done()
+                self.db_manager.update_round(round_id, {'status': RoundStatus.FINISHED.name})
+                self.round_end_date(round_id)
+                self.check_and_prepare_next_round(tournament_id, round_id)
+                unfinished = False
+                return
 
-        all_unfinished_matches = []
-        for match in unfinished_matches:
-            player1 = self.db_manager.get_player(match['player1_id'])
-            player2 = self.db_manager.get_player(match['player2_id'])
-            match['player1_chess_id'] = player1['chess_id']
-            match['player2_chess_id'] = player2['chess_id']
-            match['player1_name'] = f"{player1.get('first_name', 'inconnu')} {player1.get('last_name', 'inconnu')}"
-            match['player2_name'] = f"{player2.get('first_name', 'inconnu')} {player2.get('last_name', 'inconnu')}"
-            match['match_id'] = match.doc_id
-            all_unfinished_matches.append(match)
+            all_unfinished_matches = []
+            for match in unfinished_matches:
+                player1 = self.db_manager.get_player(match['player1_id'])
+                player2 = self.db_manager.get_player(match['player2_id'])
+                match['player1_chess_id'] = player1['chess_id']
+                match['player2_chess_id'] = player2['chess_id']
+                match['player1_name'] = f"{player1.get('first_name', 'inconnu')} {player1.get('last_name', 'inconnu')}"
+                match['player2_name'] = f"{player2.get('first_name', 'inconnu')} {player2.get('last_name', 'inconnu')}"
+                match['match_id'] = match.doc_id
+                all_unfinished_matches.append(match)
 
-        # display all unfinished matches
-        self.view.display_matches(round_id, all_unfinished_matches)
+            # display all unfinished matches
+            self.view.display_matches(round_id, all_unfinished_matches)
 
-        # ask matches results
-        for match in all_unfinished_matches:
-            self.ask_match_results(tournament_id, [match], round_id)
-
-        matches = self.db_manager.list_matches(round_id)
-        if all(match['winner'] is not None for match in matches):
-            self.db_manager.update_round(round_id, {'status': RoundStatus.FINISHED.name})
-            self.view.message_round_finished()
-            self.check_and_prepare_next_round(tournament_id, round_id)
-        else:
-            self.view.message_matches_left()
+            # ask matches results
+            for match in all_unfinished_matches:
+                self.ask_match_results(tournament_id, [match], round_id)
 
     def check_and_prepare_next_round(self, tournament_id, current_round_id):
         # get tournament infos status
